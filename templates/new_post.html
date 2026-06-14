@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}新規投稿{% endblock %}
+
+{% block content %}
+<div class="post-form-container">
+    <h2>新規投稿</h2>
+
+    <form method="POST" action="{{ url_for('new_post') }}" class="post-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="form-group">
+            <label>カテゴリー</label>
+
+            <!-- ステータスカテゴリ -->
+            <div class="category-section">
+                <h4>学習状況</h4>
+                <label><input type="checkbox" name="categories" value="1"> 学習中</label>
+                <label><input type="checkbox" name="categories" value="2"> 制作中</label>
+                <label><input type="checkbox" name="categories" value="3"> 完成・達成</label>
+            </div>
+
+            <!-- 技術カテゴリ -->
+            <div class="category-section">
+                <h4>技術分野</h4>
+                <label><input type="checkbox" name="categories" value="4"> Python基礎</label>
+                <label><input type="checkbox" name="categories" value="5"> Web開発(Flask)</label>
+                <label><input type="checkbox" name="categories" value="6"> データベース(SQL)</label>
+                <label><input type="checkbox" name="categories" value="7"> フロントエンド(HTML/CSS/JS)</label>
+                <label><input type="checkbox" name="categories" value="8"> その他</label>
+            </div>
+        </div><!-- .form-group -->
+
+        <div class="form-group">
+            <label for="content">投稿内容</label>
+            <textarea name="content" id="content" rows="10" maxlength="1000"></textarea>
+        </div><!-- .form-group -->
+
+        <div class="form-actions">
+            <a href="{{ url_for('index') }}" class="btn">トップに戻る</a>
+            <button type="submit" class="btn">投稿する</button>
+        </div><!-- .form-actions -->
+
+    </form>
+
+</div><!-- .post-form-container -->
+
+{% endblock %}

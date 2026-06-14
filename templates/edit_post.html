@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}投稿編集{% endblock %}
+
+{% block content %}
+<div class="post-form-container">
+    <h2>投稿編集</h2>
+
+    <form method="POST" action="{{ url_for('edit_post', post_id=post.id) }}" class="post-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="form-group">
+            <label>カテゴリー</label>
+
+            <!-- ステータスカテゴリ -->
+            <div class="category-section">
+                <h4>学習状況</h4>
+                <label><input type="checkbox" name="categories" value="1" {% if 1 in post.category_ids %}checked{% endif
+                        %}> 学習中</label>
+                <label><input type="checkbox" name="categories" value="2" {% if 2 in post.category_ids %}checked{% endif
+                        %}> 制作中</label>
+                <label><input type="checkbox" name="categories" value="3" {% if 3 in post.category_ids %}checked{% endif
+                        %}> 完成・達成</label>
+            </div>
+
+            <!-- 技術カテゴリ -->
+            <div class="category-section">
+                <h4>技術分野</h4>
+                <label><input type="checkbox" name="categories" value="4" {% if 4 in post.category_ids %}checked{% endif
+                        %}> Python基礎</label>
+                <label><input type="checkbox" name="categories" value="5" {% if 5 in post.category_ids %}checked{% endif
+                        %}> Web開発(Flask)</label>
+                <label><input type="checkbox" name="categories" value="6" {% if 6 in post.category_ids %}checked{% endif
+                        %}> データベース(SQL)</label>
+                <label><input type="checkbox" name="categories" value="7" {% if 7 in post.category_ids %}checked{% endif
+                        %}> フロントエンド(HTML/CSS/JS)</label>
+                <label><input type="checkbox" name="categories" value="8" {% if 8 in post.category_ids %}checked{% endif
+                        %}> その他</label>
+            </div>
+        </div><!-- .form-group -->
+
+        <div class="form-group">
+            <label for="content">投稿内容</label>
+            <textarea name="content" id="content" rows="10" maxlength="1000" required>{{ post.content }}</textarea>
+        </div><!-- .form-group -->
+
+        <div class="form-actions">
+            <a href="{{ url_for('index') }}" class="btn">トップに戻る</a>
+            <button type="button" onclick="confirmDelete()" class="btn">削除</button>
+            <button type="submit" class="btn">投稿</button>
+        </div><!-- .form-actions -->
+
+    </form>
+
+</div><!-- .post-form-container -->
+
+<script>
+    function confirmDelete() {
+        if (confirm('本当に削除しますか')) {
+            // フォームを動的に作成してPOST
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ url_for('delete_post', post_id=post.id)}}"
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+
+{% endblock %}

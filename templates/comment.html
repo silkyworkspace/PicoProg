@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}コメント{% endblock %}
+
+{% block content %}
+<div class="comment-container">
+    <!-- 元の投稿表示 -->
+    <article class="original-post">
+        <div class="post-header">
+            <div class="user-info">
+                <img src="{{ url_for('static', filename='uploads/' + post.icon_path) if post.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
+                    alt="アイコン" class="user-icon">
+                <span class="username">{{ post.username }}</span>
+            </div>
+            <span class="post-date">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div><!-- .post-header -->
+        <div class="post-categories">
+            {% for category in post.categories %}
+            <span class="category-tag">{{ category }}</span>
+            {% endfor %}
+        </div>
+        <div class="post-content">
+            {{ post.content }}
+        </div>
+    </article>
+    <!-- コメント一覧 -->
+    <div class="comments-section">
+        <h3>コメント</h3>
+
+        {% for comment in comments %}
+        <div class="comment">
+            <div class="comment-header">
+                <div class="user-info">
+                    <img src="{{ url_for('static', filename='uploads/' + post.icon_path) if post.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
+                        alt="アイコン" class="user-icon">
+                    <span class="username">{{ comment.username }}</span>
+                </div>
+                <span class="post-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <div class="comment-content">
+                {{ comment.content }}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if not comments %}
+        <p class="no-comments">まだコメントありません</p>
+        {% endif %}
+    </div><!-- .comments-section -->
+
+    <!-- コメント投稿フォーム -->
+    <div class="comment-form-section">
+        <h3>コメントする</h3>
+        <form method="POST" action="{{ url_for('comment', post_id=post.id)}}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <textarea name="content" rows="4" maxlength="500" placeholder="コメントを入力（500文字以内）" required></textarea>
+            </div>
+            <button type="submit" class="btn">コメントする</button>
+        </form>
+    </div>
+
+    <!-- ナビゲーション -->
+    <div class="navigation">
+        <a href="{{ url_for('index') }}" class="btn">トップに戻る</a>
+    </div>
+
+</div><!-- .comment-container -->
+
+{% endblock %}

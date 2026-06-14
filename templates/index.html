@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}タイムライン{% endblock %}
+
+{% block content %}
+<!-- ナビゲーションバー -->
+<nav class="main-nav">
+    <a href="{{ url_for('index') }}" class="active">タイムライン</a>
+    <a href="{{ url_for('new_post') }}">投稿する</a>
+    <a href="{{ url_for('favorites') }}">お気に入り</a>
+    <a href="{{ url_for('user_settings') }}">ユーザー設定</a>
+    <a href="{{ url_for('logout') }}">ログアウト</a>
+</nav>
+
+<!--検索とカテゴリーフィルター -->
+<div class="filter-section">
+    <h3>絞り込み検索</h3>
+    <form method="GET" action="{{ url_for('index') }}">
+        <!-- キーワード検索 -->
+         <div class="search-box">
+            <input
+            type="text"
+            name="keyword"
+            placeholder="キーワードで検索"
+            value="{{ request.args.get('keyword', '')}}"
+            class="search-input">
+         </div>
+
+        <!-- カテゴリフィルター -->
+        <h4>カテゴリ</h4>
+        <div class="category-filters">
+            <!-- ステータスカテゴリ -->
+            <div class="category-group">
+                <label><input type="checkbox" name="category" value="1" {% if '1' in request.args.getlist('category') %}checked{% endif %}>学習中</label>
+                <label><input type="checkbox" name="category" value="2" {% if '2' in request.args.getlist('category') %}checked{% endif %}>制作中</label>
+                <label><input type="checkbox" name="category" value="3" {% if '3' in request.args.getlist('category') %}checked{% endif %}>完成・達成</label>
+            </div>
+            <!-- 技術カテゴリ -->
+            <div class="category-group">
+                <label><input type="checkbox" name="category" value="4" {% if '4' in request.args.getlist('category') %}checked{% endif %}>Python基礎</label>
+                <label><input type="checkbox" name="category" value="5" {% if '5' in request.args.getlist('category') %}checked{% endif %}>Web開発(Flask)</label>
+                <label><input type="checkbox" name="category" value="6" {% if '6' in request.args.getlist('category') %}checked{% endif %}>データベース(SQL)</label>
+                <label><input type="checkbox" name="category" value="7" {% if '7' in request.args.getlist('category') %}checked{% endif %}>フロントエンド(HTML/CSS/JS)</label>
+                <label><input type="checkbox" name="category" value="8" {% if '8' in request.args.getlist('category') %}checked{% endif %}>その他</label>
+            </div>
+        </div><!-- .category-filters -->
+        <div class="filter-actions">
+            <button type="submit" class="btn btn-filter">絞り込み</button>
+            <a href="{{ url_for('index')}}" class="btn btn-clear">クリア</a>
+        </div>
+    </form>
+</div>
+
+<div class="posts-container">
+    {% for post in posts %}
+    <article class="post-card">
+            <div class="post-header">
+                <div class="user-info">
+                    <img src="{{ url_for('static', filename='uploads/' + post.icon_path) if post.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
+                        alt="アイコン" class="user-icon">
+                    <span class="username">{{ post.username }}</span>
+                </div>
+                <span class="post-date">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div><!-- .post-header -->
+
+        <div class="post-categories">
+            {% for category in post.categories %}
+            <span class="category-tag">{{ category }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="post-content">
+            {{ post.content }}
+        </div>
+
+        <div class="post-actions">
+            <button class="btn-favorite {% if post.is_favorited %}active{% endif %}" data-post-id="{{ post.id }}" onclick="toggleFavorite('{{ post.id }}')">
+                🧡お気に入り
+            </button>
+            <a href="{{ url_for('comment', post_id=post.id) }}" class="btn-comment">
+                💬コメント
+            </a>
+            {% if post.user_id == session.user_id %}
+            <a href="{{ url_for('edit_post', post_id=post.id)}}" class="btn-edit">
+                ✏️編集
+            </a>
+            {% endif %}
+        </div>
+    </article>
+    {% endfor %}
+    
+    {% if not posts %}
+    <p class="no-posts">まだ投稿がありません</p>
+    {% endif %}
+</div>
+<script>
+    function toggleFavorite(postId) {
+       // フォームを動的に作成してPOST
+       const form = document.createElement('form');
+       form.method = 'POST';
+       form.action = `/post/${postId}/favorite`;
+       document.body.appendChild(form);
+       form.submit();
+    }
+</script>
+{% endblock %}

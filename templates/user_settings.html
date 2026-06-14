@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}ユーザー設定{% endblock %}
+
+{% block content %}
+<div class="post-form-container">
+    <h2>ユーザー設定</h2>
+
+
+    <form method="POST" action="{{ url_for('user_settings') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+            <label for="username">ユーザー名</label>
+            <input type="text" id="username" name="username" value="{{ user.username if user else 'program-lover' }}"
+                required>
+        </div>
+
+        <div class="form-group">
+            <label for="icon">アイコン画像</label>
+            <input type="file" id="icon" name="icon" accept="image/*">
+            {% if user and user.icon_path %}
+            <div class="current-icon">
+                <p>現在のアイコン:</p>
+                <img src="{{ url_for('static', filename='uploads/' + user.icon_path) }}" alt="現在のアイコン"
+                    class="preview-icon">
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="profile">プロフィール</label>
+            <textarea id="profile" name="profile" rows="4"
+                placeholder="自己紹介を入力してください">{{ user.profile if user else '' }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('index') }}" class="btn">トップに戻る</a>
+            <button type="submit" class="btn">変更</button>
+        </div>
+
+    </form>
+
+</div><!-- .post-form-container -->
+
+{% endblock %}
