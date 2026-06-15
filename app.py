@@ -81,6 +81,7 @@ def login_required(f):#引数として関数を受け取る
 
 # テスト用ルート
 @app.route('/')
+@login_required
 def index():
 
     # 仮の投稿データ
