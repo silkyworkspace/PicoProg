@@ -875,6 +875,7 @@ def comment(post_id):
                        c.id,
                        c.content,
                        c.created_at,
+                       c.user_id,
                        u.username,
                        u.icon_path
                 FROM comments c
@@ -897,6 +898,7 @@ def comment(post_id):
                             c.id,
                             c.content,
                             c.created_at,
+                            c.user_id,
                             u.username,
                             u.icon_path
                         FROM comments c
@@ -923,6 +925,7 @@ def comment(post_id):
                     c.id,
                     c.content,
                     c.created_at,
+                    c.user_id,
                     u.username,
                     u.icon_path
                 FROM comments c
@@ -1027,6 +1030,32 @@ def delete_post(post_id):
     
     finally:
         cursor.close()
+        conn.close()
+
+# コメント削除
+@app.route('/comment/<int:comment_id>/delete', methods=['POST'])
+def delete_comment(comment_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT user_id, post_id FROM comments WHERE id = %s', (comment_id,))
+        comment = cursor.fetchone()
+        if not comment:
+            flash('コメントが見つかりません', 'error')
+            return redirect(url_for('index'))
+        if comment['user_id'] != session['user_id']:
+            flash('他のユーザーのコメントは削除できません', 'error')
+            return redirect(url_for('comment', post_id=comment['post_id']))
+        cursor.execute('DELETE FROM comments WHERE id = %s', (comment_id,))
+        conn.commit()
+        flash('コメントを削除しました', 'success')
+        return redirect(url_for('comment', post_id=comment['post_id']))
+    except Exception as err:
+        flash(f'削除に失敗しました: {err}', 'error')
+        return redirect(url_for('index'))
+    finally:
         conn.close()
 
 # エラーハンドラ

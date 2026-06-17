@@ -39,7 +39,14 @@
                         alt="アイコン" class="user-icon">
                     <span class="username">{{ comment.username }}</span>
                 </div>
-                <span class="post-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <div class="comment-meta">
+                    <span class="post-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    {% if session.user_id == comment.user_id %}
+                    <button class="btn-trash" onclick="deleteComment({{ comment.id }})">
+                        <img src="{{ url_for('static', filename='icons/trash.svg') }}" alt="削除" class="btn-icon">
+                    </button>
+                    {% endif %}
+                </div>
             </div>
             <div class="comment-content">{{ comment.content }}</div>
         </div>
@@ -70,6 +77,20 @@
 </div><!-- .comment-container -->
 
 <script>
+    function deleteComment(commentId) {
+        if (!confirm('このコメントを削除しますか？')) return;
+        const f = document.createElement('form');
+        f.method = 'POST';
+        f.action = `/comment/${commentId}/delete`;
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrf_token';
+        csrf.value = '{{ csrf_token() }}';
+        f.appendChild(csrf);
+        document.body.appendChild(f);
+        f.submit();
+    }
+
     function toggleLike(postId) {
         const form = document.createElement('form');
         form.method = 'POST';
