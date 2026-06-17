@@ -93,6 +93,23 @@ def validate_image(file):
     
     return True, None  # 検証OK
 
+@app.before_request
+def load_user_icon():
+    if 'user_id' in session and 'user_icon' not in session:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute('SELECT icon_path FROM users WHERE id = %s', (session['user_id'],))
+            user = cursor.fetchone()
+            session['user_icon'] = user['icon_path'] if user else None
+        except Exception:
+            session['user_icon'] = None
+        finally:
+            if 'cursor' in locals():
+                cursor.close()
+            if 'conn' in locals():
+                conn.close()
+
 # ログイン必須デコレーター
 def login_required(f):#引数として関数を受け取る
     @wraps(f)
@@ -275,7 +292,7 @@ def login():
 
             # ユーザー情報を取得
             cursor.execute(
-                'SELECT id, username, password FROM users WHERE email = %s', (email,)
+                'SELECT id, username, password, icon_path FROM users WHERE email = %s', (email,)
             )
             user = cursor.fetchone()
             print(user)
@@ -289,6 +306,7 @@ def login():
             # セッションにユーザー情報を保存
             session['user_id'] = user['id']
             session['username'] = user['username']
+            session['user_icon'] = user['icon_path']
 
             flash(f"{session['username']}さん、ログインしました", 'success')
             print(session)
@@ -366,6 +384,7 @@ def register():
             # セッションにユーザー情報を保持(自動ログイン)
             session['user_id'] = user_id
             session['username'] = username
+            session['user_icon'] = None
 
             flash('登録が完了しました', 'success')
             return redirect(url_for('index'))
@@ -393,11 +412,11 @@ def logout():
 @login_required
 def new_post():
     if request.method == 'POST':
-        content = request.form.get('content')
+        content = request.form.get('content', '').strip()
         categories = request.form.getlist('categories') # 複数のカテゴリを取得
 
         # バリデーション
-        if not content or not content.strip():
+        if not content:
             flash('投稿内容を入力してください', 'error')
             return redirect(url_for('new_post'))
 
@@ -667,8 +686,9 @@ def user_settings():
             
             conn.commit()
 
-            # セッションのユーザー名を更新
+            # セッションのユーザー名・アイコンを更新
             session['username'] = username
+            session['user_icon'] = icon_filename
 
             flash('設定を更新しました', 'success')
             return redirect(url_for('index'))
@@ -731,11 +751,11 @@ def edit_post(post_id):
 
         # POST処理（更新）
         if request.method == 'POST':
-            content = request.form.get('content')
+            content = request.form.get('content', '').strip()
             new_categories = request.form.getlist('categories')
 
             # バリデーション
-            if not content or not content.strip():
+            if not content:
                 flash('投稿内容を入力してください', 'error')
                 return render_template('edit_post.html', post=post)
 
@@ -866,7 +886,7 @@ def comment(post_id):
 
         # POST処理（コメント投稿）
         if request.method == 'POST':
-            content = request.form.get('content')
+            content = request.form.get('content', '').strip()
 
             # バリデーション
             if not content:
