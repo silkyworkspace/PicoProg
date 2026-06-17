@@ -295,8 +295,8 @@ button[type="submit"].btn:hover {
 }
 
 .user-icon {
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   border: 1.5px solid var(--line);
@@ -697,6 +697,42 @@ footer {
   font-size: 0.75rem;
   color: var(--muted);
   margin-top: auto;
+}
+
+/* ===== REQUIRED MARK ===== */
+.required-mark {
+  color: #e05252;
+  font-size: 0.65rem;
+  margin-left: 0.25rem;
+  vertical-align: middle;
+  opacity: 0.8;
+}
+
+/* ===== FORM VALIDATION ===== */
+.form-group input.is-invalid,
+.form-group textarea.is-invalid {
+  border-color: #ef4444;
+  background: #fff5f5;
+}
+
+.field-error-msg {
+  display: block;
+  font-size: 0.75rem;
+  color: #b91c1c;
+  margin-top: 0.2rem;
+}
+
+.char-counter {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+.char-counter.over {
+  color: #b91c1c;
+  font-weight: 700;
 }
 
 /* ===== ACCESSIBILITY ===== */

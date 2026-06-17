@@ -8,30 +8,110 @@
 
     <form method="POST" action="{{ url_for('register') }}" class="auth-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
+
         <div class="form-group">
             <label for="username">ユーザー名</label>
-            <input type="text" id="username" name="username" required max-length="50" placeholder="ユーザー名(50文字以内)">
+            <input type="text" id="username" name="username" placeholder="ユーザー名（3〜20文字）">
         </div>
 
         <div class="form-group">
             <label for="email">メールアドレス</label>
-            <input type="email" id="email" name="email" required placeholder="example@email.com">
+            <input type="email" id="email" name="email" placeholder="example@email.com">
         </div>
 
         <div class="form-group">
             <label for="password">パスワード</label>
-            <input type="password" id="password" name="password" required minlength="8" placeholder="パスワード（8文字以上）">
+            <input type="password" id="password" name="password" placeholder="8文字以上・英字と数字を含む">
         </div>
 
         <div class="form-group">
-            <label for="password_confirm">パスワード</label>
-            <input type="password" id="password_confirm" name="password_confirm" required minlength="8"
-                placeholder="パスワードを再入力">
+            <label for="password_confirm">パスワード（確認）</label>
+            <input type="password" id="password_confirm" name="password_confirm" placeholder="パスワードを再入力">
         </div>
 
         <button type="submit" class="btn btn-primary">登録してログイン</button>
-
     </form>
+    <p class="auth-link">
+        アカウントをお持ちの方は<a href="{{ url_for('login') }}">ログインページへ</a>
+    </p>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const form = document.querySelector('.auth-form');
+  const usernameInput = document.getElementById('username');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const confirmInput = document.getElementById('password_confirm');
+
+  function showError(input, msg) {
+    input.classList.add('is-invalid');
+    let span = input.parentElement.querySelector('.field-error-msg');
+    if (!span) {
+      span = document.createElement('span');
+      span.className = 'field-error-msg';
+      input.parentElement.appendChild(span);
+    }
+    span.textContent = msg;
+  }
+
+  function clearError(input) {
+    input.classList.remove('is-invalid');
+    const span = input.parentElement.querySelector('.field-error-msg');
+    if (span) span.textContent = '';
+  }
+
+  function isValidEmail(v) {
+    return /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(v);
+  }
+
+  function validatePassword(v) {
+    if (v.length < 8) return '8文字以上で入力してください';
+    if (!/[a-zA-Z]/.test(v)) return '英字を含めてください';
+    if (!/[0-9]/.test(v)) return '数字を含めてください';
+    return null;
+  }
+
+  [usernameInput, emailInput, passwordInput, confirmInput].forEach(el =>
+    el.addEventListener('input', () => clearError(el))
+  );
+
+  form.addEventListener('submit', function (e) {
+    let ok = true;
+
+    const uname = usernameInput.value.trim();
+    if (!uname) {
+      showError(usernameInput, 'ユーザー名を入力してください');
+      ok = false;
+    } else if (uname.length < 3 || uname.length > 20) {
+      showError(usernameInput, 'ユーザー名は3〜20文字で入力してください');
+      ok = false;
+    }
+
+    const email = emailInput.value.trim();
+    if (!email) {
+      showError(emailInput, 'メールアドレスを入力してください');
+      ok = false;
+    } else if (!isValidEmail(email)) {
+      showError(emailInput, 'メールアドレスの形式が正しくありません');
+      ok = false;
+    }
+
+    const pwdErr = validatePassword(passwordInput.value);
+    if (pwdErr) {
+      showError(passwordInput, pwdErr);
+      ok = false;
+    }
+
+    if (passwordInput.value !== confirmInput.value) {
+      showError(confirmInput, 'パスワードが一致しません');
+      ok = false;
+    }
+
+    if (!ok) e.preventDefault();
+  });
+})();
+</script>
 {% endblock %}

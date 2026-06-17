@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import mysql.connector
 import bcrypt
+import re
 from config import Config
 import os
 from datetime import datetime
@@ -11,6 +12,29 @@ from flask_wtf.csrf import CSRFProtect, generate_csrf  # ← generate_csrf を�
 # 画像アップロードの設定を追加
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+# バリデーション定数
+USERNAME_MIN = 3
+USERNAME_MAX = 20
+POST_MAX = 1000
+
+def _validate_email(email):
+    pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    return bool(re.match(pattern, email))
+
+def _validate_password(password):
+    if len(password) < 8:
+        return False, 'パスワードは8文字以上で入力してください'
+    if not re.search(r'[a-zA-Z]', password):
+        return False, 'パスワードには英字を含めてください'
+    if not re.search(r'[0-9]', password):
+        return False, 'パスワードには数字を含めてください'
+    return True, None
+
+def _validate_username(username):
+    if len(username) < USERNAME_MIN or len(username) > USERNAME_MAX:
+        return False, f'ユーザー名は{USERNAME_MIN}〜{USERNAME_MAX}文字で入力してください'
+    return True, None
 
 # アプリケーションの初期化（Flaskアプリを作成し、設定を読み込む）
 app = Flask(__name__)
@@ -238,7 +262,10 @@ def login():
         # バリデーション
         if not email or not password:
             flash('メールアドレスとパスワードを入力してください', 'error')
-            # return render_template('login.html')
+            return redirect(url_for('login'))
+
+        if not _validate_email(email):
+            flash('メールアドレスの形式が正しくありません', 'error')
             return redirect(url_for('login'))
         
         try:
@@ -288,10 +315,24 @@ def register():
         password_confirm = request.form.get('password_confirm')
 
         # バリデーション
-        if not username or not email or not password:
+        if not username or not email or not password or not password_confirm:
             flash('全ての項目を入力してください', 'error')
             return redirect(url_for('register'))
-        
+
+        ok, msg = _validate_username(username)
+        if not ok:
+            flash(msg, 'error')
+            return redirect(url_for('register'))
+
+        if not _validate_email(email):
+            flash('メールアドレスの形式が正しくありません', 'error')
+            return redirect(url_for('register'))
+
+        ok, msg = _validate_password(password)
+        if not ok:
+            flash(msg, 'error')
+            return redirect(url_for('register'))
+
         if password != password_confirm:
             flash('パスワードが一致しません', 'error')
             return redirect(url_for('register'))
@@ -356,13 +397,17 @@ def new_post():
         categories = request.form.getlist('categories') # 複数のカテゴリを取得
 
         # バリデーション
-        if not content:
+        if not content or not content.strip():
             flash('投稿内容を入力してください', 'error')
-            return redirect('new_post')
-        
+            return redirect(url_for('new_post'))
+
+        if len(content) > POST_MAX:
+            flash(f'投稿内容は{POST_MAX}文字以内で入力してください（現在{len(content)}文字）', 'error')
+            return redirect(url_for('new_post'))
+
         if not categories:
             flash('カテゴリを1つ以上選択してください', 'error')
-            return redirect('new_post')
+            return redirect(url_for('new_post'))
         
         try:
             conn = get_db_connection()
@@ -690,10 +735,14 @@ def edit_post(post_id):
             new_categories = request.form.getlist('categories')
 
             # バリデーション
-            if not content:
+            if not content or not content.strip():
                 flash('投稿内容を入力してください', 'error')
                 return render_template('edit_post.html', post=post)
-            
+
+            if len(content) > POST_MAX:
+                flash(f'投稿内容は{POST_MAX}文字以内で入力してください（現在{len(content)}文字）', 'error')
+                return render_template('edit_post.html', post=post)
+
             if not new_categories:
                 flash('カテゴリを1つ以上選択してください', 'error')
                 return render_template('edit_post.html', post=post)
