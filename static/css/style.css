@@ -58,39 +58,71 @@ header h1 a {
     margin-inline-start: 0.2rem;
 }
 
+/* ===== PAGE WRAPPER ===== */
+.page-wrapper {
+  display: flex;
+  gap: 1.5rem;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+}
+
 /* ===== NAV ===== */
 .main-nav {
   background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   display: flex;
-  padding: 0 1.5rem;
-  margin-block-end: 1rem;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-direction: column;
+  padding: 0.4rem 0;
+  margin-bottom: 0.75rem;
 }
-
-.main-nav::-webkit-scrollbar { display: none; }
 
 .main-nav a {
   font-size: 0.83rem;
   font-weight: 600;
   color: var(--muted);
-  padding: 0.65rem 1rem;
-  border-bottom: 2px solid transparent;
+  padding: 0.6rem 1rem;
+  border-left: 2px solid transparent;
   white-space: nowrap;
-  transition: color 0.12s, border-color 0.12s;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
 }
 
-.main-nav a:hover  { color: var(--ink); }
-.main-nav a.active { color: var(--ink); border-bottom-color: var(--green); }
+.main-nav a:hover  { color: var(--ink); background: var(--bg); }
+.main-nav a.active { color: var(--ink); border-left-color: var(--green); background: var(--green-wash); }
 
 /* ===== MAIN ===== */
 main {
   flex: 1;
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem;
+  min-width: 0;
+}
+
+.main-auth {
   width: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== FILTER SECTION ===== */
+.filter-toggle {
+  display: none;
+}
+
+.filter-body {
+  padding: 1rem 1.25rem;
 }
 
 /* ===== FLASH MESSAGES ===== */
@@ -118,6 +150,7 @@ main {
 /* ===== BUTTONS ===== */
 .btn {
   display: inline-flex;
+  justify-content: center;
   align-items: center;
   gap: 0.3rem;
   padding: 0.45rem 1rem;
@@ -168,17 +201,7 @@ button[type="submit"].btn:hover {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
-}
-
-.filter-section h3 {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin-bottom: 0.75rem;
+  overflow: hidden;
 }
 
 .search-box { margin-bottom: 0.75rem; }
@@ -406,8 +429,8 @@ button[type="submit"].btn:hover {
 
 /* ===== AUTH FORMS ===== */
 .auth-container {
+  width: 100%;
   max-width: 400px;
-  margin: 2.5rem auto;
   background: var(--surface);
   border: 1px solid var(--line);
   border-top: 3px solid var(--green);
@@ -536,6 +559,92 @@ textarea:focus {
   margin-top: 0.4rem;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+/* ===== MOBILE ( ~767px ) ===== */
+@media (max-width: 767px) {
+  .page-wrapper {
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  /* Nav: 横スクロールのタブ表示 */
+  .main-nav {
+    flex-direction: row;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    padding: 0 0.5rem;
+    margin-bottom: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .main-nav::-webkit-scrollbar { display: none; }
+
+  .main-nav a {
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.65rem 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .main-nav a:hover  { background: transparent; }
+  .main-nav a.active { background: transparent; border-left-color: transparent; border-bottom-color: var(--green); }
+
+  /* Filter: アコーディオン */
+  .filter-section {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    margin-bottom: 0;
+  }
+
+  .filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: none;
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .toggle-arrow {
+    font-size: 1rem;
+    transition: transform 0.2s;
+  }
+
+  .filter-toggle[aria-expanded="true"] .toggle-arrow {
+    transform: rotate(180deg);
+  }
+
+  .filter-body {
+    display: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .filter-body.open {
+    display: block;
+  }
+
+  main {
+    padding: 1rem;
+  }
 }
 
 /* ===== COMMENT PAGE ===== */

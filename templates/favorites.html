@@ -3,15 +3,6 @@
 {% block title %}お気に入り{% endblock %}
 
 {% block content %}
-<!-- ナビゲーションバー -->
-<nav class="main-nav">
-    <a href="{{ url_for('index') }}">タイムライン</a>
-    <a href="{{ url_for('new_post') }}">投稿する</a>
-    <a href="{{ url_for('favorites') }}" class="active">お気に入り</a>
-    <a href="{{ url_for('user_settings') }}">ユーザー設定</a>
-    <a href="{{ url_for('logout') }}">ログアウト</a>
-</nav>
-
 <div class="posts-container">
     {% for post in posts %}
     <article class="post-card">

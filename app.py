@@ -74,7 +74,6 @@ def login_required(f):#引数として関数を受け取る
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash('ログインが必要です', 'error')
             return redirect(url_for('login'))
         return f(*args, **kwargs) #元の関数（f）を実行している行
     return decorated_function #新しい関数（decorated_function）を返す
