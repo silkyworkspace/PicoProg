@@ -169,7 +169,9 @@ def index():
             p.content,
             p.created_at,
             u.username,
-            u.icon_path
+            u.icon_path,
+            (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
+            (SELECT COUNT(*) FROM favorites fv WHERE fv.post_id = p.id) AS favorite_count
         FROM posts p
         JOIN users u ON p.user_id = u.id
         '''
@@ -491,13 +493,15 @@ def favorites():
 
         # お気に入り登録した投稿を取得
         cursor.execute('''
-            SELECT 
-                    p.id, 
+            SELECT
+                    p.id,
                     p.content,
                     p.created_at,
                     p.user_id,
                     u.username,
-                    u.icon_path
+                    u.icon_path,
+                    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
+                    (SELECT COUNT(*) FROM favorites fv WHERE fv.post_id = p.id) AS favorite_count
             FROM posts p
             JOIN users u  ON p.user_id = u.id
             JOIN favorites f ON p.id = f.post_id
