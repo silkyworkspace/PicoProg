@@ -8,63 +8,130 @@
 
     <form method="POST" action="{{ url_for('edit_post', post_id=post.id) }}" class="post-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
-        <div class="form-group">
-            <label>カテゴリー</label>
 
-            <!-- ステータスカテゴリ -->
+        <div class="form-group" id="category-group">
+            <label>カテゴリー<span class="required-mark">*</span></label>
+
             <div class="category-section">
                 <h4>学習状況</h4>
-                <label><input type="checkbox" name="categories" value="1" {% if 1 in post.category_ids %}checked{% endif
-                        %}> 学習中</label>
-                <label><input type="checkbox" name="categories" value="2" {% if 2 in post.category_ids %}checked{% endif
-                        %}> 制作中</label>
-                <label><input type="checkbox" name="categories" value="3" {% if 3 in post.category_ids %}checked{% endif
-                        %}> 完成・達成</label>
+                <label><input type="checkbox" name="categories" value="1" {% if 1 in post.category_ids %}checked{% endif %}> 学習中</label>
+                <label><input type="checkbox" name="categories" value="2" {% if 2 in post.category_ids %}checked{% endif %}> 制作中</label>
+                <label><input type="checkbox" name="categories" value="3" {% if 3 in post.category_ids %}checked{% endif %}> 完成・達成</label>
             </div>
 
-            <!-- 技術カテゴリ -->
             <div class="category-section">
                 <h4>技術分野</h4>
-                <label><input type="checkbox" name="categories" value="4" {% if 4 in post.category_ids %}checked{% endif
-                        %}> Python基礎</label>
-                <label><input type="checkbox" name="categories" value="5" {% if 5 in post.category_ids %}checked{% endif
-                        %}> Web開発(Flask)</label>
-                <label><input type="checkbox" name="categories" value="6" {% if 6 in post.category_ids %}checked{% endif
-                        %}> データベース(SQL)</label>
-                <label><input type="checkbox" name="categories" value="7" {% if 7 in post.category_ids %}checked{% endif
-                        %}> フロントエンド(HTML/CSS/JS)</label>
-                <label><input type="checkbox" name="categories" value="8" {% if 8 in post.category_ids %}checked{% endif
-                        %}> その他</label>
+                <label><input type="checkbox" name="categories" value="4" {% if 4 in post.category_ids %}checked{% endif %}> Python基礎</label>
+                <label><input type="checkbox" name="categories" value="5" {% if 5 in post.category_ids %}checked{% endif %}> Web開発(Flask)</label>
+                <label><input type="checkbox" name="categories" value="6" {% if 6 in post.category_ids %}checked{% endif %}> データベース(SQL)</label>
+                <label><input type="checkbox" name="categories" value="7" {% if 7 in post.category_ids %}checked{% endif %}> フロントエンド(HTML/CSS/JS)</label>
+                <label><input type="checkbox" name="categories" value="8" {% if 8 in post.category_ids %}checked{% endif %}> その他</label>
             </div>
-        </div><!-- .form-group -->
+        </div>
 
         <div class="form-group">
-            <label for="content">投稿内容</label>
-            <textarea name="content" id="content" rows="10" maxlength="1000" required>{{ post.content }}</textarea>
-        </div><!-- .form-group -->
+            <label for="content">投稿内容<span class="required-mark">*</span></label>
+            <textarea name="content" id="content" rows="10">{{ post.content }}</textarea>
+            <span class="char-counter" id="char-counter">0 / 1000</span>
+        </div>
 
         <div class="form-actions">
             <a href="{{ url_for('index') }}" class="btn">トップに戻る</a>
             <button type="button" onclick="confirmDelete()" class="btn">削除</button>
-            <button type="submit" class="btn">投稿</button>
-        </div><!-- .form-actions -->
-
+            <button type="submit" class="btn btn-primary">投稿</button>
+        </div>
     </form>
+</div>
+{% endblock %}
 
-</div><!-- .post-form-container -->
-
+{% block scripts %}
 <script>
-    function confirmDelete() {
-        if (confirm('本当に削除しますか')) {
-            // フォームを動的に作成してPOST
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = "{{ url_for('delete_post', post_id=post.id)}}"
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
-</script>
+(function () {
+  const POST_MAX = 1000;
+  const form = document.querySelector('.post-form');
+  const textarea = document.getElementById('content');
+  const counter = document.getElementById('char-counter');
+  const categoryGroup = document.getElementById('category-group');
 
+  function showError(el, msg) {
+    el.classList.add('is-invalid');
+    let span = el.parentElement.querySelector('.field-error-msg');
+    if (!span) {
+      span = document.createElement('span');
+      span.className = 'field-error-msg';
+      el.parentElement.insertBefore(span, el.nextSibling);
+    }
+    span.textContent = msg;
+  }
+
+  function clearError(el) {
+    el.classList.remove('is-invalid');
+    const span = el.parentElement.querySelector('.field-error-msg');
+    if (span) span.textContent = '';
+  }
+
+  function showCategoryError(msg) {
+    let span = categoryGroup.querySelector('.field-error-msg');
+    if (!span) {
+      span = document.createElement('span');
+      span.className = 'field-error-msg';
+      categoryGroup.appendChild(span);
+    }
+    span.textContent = msg;
+  }
+
+  function clearCategoryError() {
+    const span = categoryGroup.querySelector('.field-error-msg');
+    if (span) span.textContent = '';
+  }
+
+  function updateCounter() {
+    const len = textarea.value.length;
+    counter.textContent = `${len} / ${POST_MAX}`;
+    counter.classList.toggle('over', len > POST_MAX);
+  }
+
+  textarea.addEventListener('input', () => {
+    updateCounter();
+    clearError(textarea);
+  });
+
+  form.querySelectorAll('input[name="categories"]').forEach(cb =>
+    cb.addEventListener('change', clearCategoryError)
+  );
+
+  updateCounter();
+
+  form.addEventListener('submit', function (e) {
+    let ok = true;
+
+    if (!textarea.value.trim()) {
+      showError(textarea, '投稿内容を入力してください');
+      ok = false;
+    } else if (textarea.value.length > POST_MAX) {
+      showError(textarea, `${POST_MAX}文字以内で入力してください`);
+      ok = false;
+    }
+
+    if (form.querySelectorAll('input[name="categories"]:checked').length === 0) {
+      showCategoryError('カテゴリを1つ以上選択してください');
+      ok = false;
+    }
+
+    if (!ok) e.preventDefault();
+  });
+
+  function confirmDelete() {
+    if (confirm('本当に削除しますか')) {
+      const f = document.createElement('form');
+      f.method = 'POST';
+      f.action = "{{ url_for('delete_post', post_id=post.id) }}";
+      document.body.appendChild(f);
+      f.submit();
+    }
+  }
+
+  window.confirmDelete = confirmDelete;
+})();
+</script>
 {% endblock %}

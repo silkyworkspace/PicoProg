@@ -8,11 +8,10 @@
 
     <form method="POST" action="{{ url_for('new_post') }}" class="post-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
-        <div class="form-group">
-            <label>カテゴリー</label>
 
-            <!-- ステータスカテゴリ -->
+        <div class="form-group" id="category-group">
+            <label>カテゴリー<span class="required-mark">*</span></label>
+
             <div class="category-section">
                 <h4>学習状況</h4>
                 <label><input type="checkbox" name="categories" value="1"> 学習中</label>
@@ -20,7 +19,6 @@
                 <label><input type="checkbox" name="categories" value="3"> 完成・達成</label>
             </div>
 
-            <!-- 技術カテゴリ -->
             <div class="category-section">
                 <h4>技術分野</h4>
                 <label><input type="checkbox" name="categories" value="4"> Python基礎</label>
@@ -29,20 +27,98 @@
                 <label><input type="checkbox" name="categories" value="7"> フロントエンド(HTML/CSS/JS)</label>
                 <label><input type="checkbox" name="categories" value="8"> その他</label>
             </div>
-        </div><!-- .form-group -->
+        </div>
 
         <div class="form-group">
-            <label for="content">投稿内容</label>
-            <textarea name="content" id="content" rows="10" maxlength="1000"></textarea>
-        </div><!-- .form-group -->
+            <label for="content">投稿内容<span class="required-mark">*</span></label>
+            <textarea name="content" id="content" rows="10"></textarea>
+            <span class="char-counter" id="char-counter">0 / 1000</span>
+        </div>
 
         <div class="form-actions">
             <a href="{{ url_for('index') }}" class="btn">トップに戻る</a>
-            <button type="submit" class="btn">投稿する</button>
-        </div><!-- .form-actions -->
-
+            <button type="submit" class="btn btn-primary">投稿する</button>
+        </div>
     </form>
+</div>
+{% endblock %}
 
-</div><!-- .post-form-container -->
+{% block scripts %}
+<script>
+(function () {
+  const POST_MAX = 1000;
+  const form = document.querySelector('.post-form');
+  const textarea = document.getElementById('content');
+  const counter = document.getElementById('char-counter');
+  const categoryGroup = document.getElementById('category-group');
 
+  function showError(el, msg) {
+    el.classList.add('is-invalid');
+    let span = el.parentElement.querySelector('.field-error-msg');
+    if (!span) {
+      span = document.createElement('span');
+      span.className = 'field-error-msg';
+      el.parentElement.insertBefore(span, el.nextSibling);
+    }
+    span.textContent = msg;
+  }
+
+  function clearError(el) {
+    el.classList.remove('is-invalid');
+    const span = el.parentElement.querySelector('.field-error-msg');
+    if (span) span.textContent = '';
+  }
+
+  function showCategoryError(msg) {
+    let span = categoryGroup.querySelector('.field-error-msg');
+    if (!span) {
+      span = document.createElement('span');
+      span.className = 'field-error-msg';
+      categoryGroup.appendChild(span);
+    }
+    span.textContent = msg;
+  }
+
+  function clearCategoryError() {
+    const span = categoryGroup.querySelector('.field-error-msg');
+    if (span) span.textContent = '';
+  }
+
+  function updateCounter() {
+    const len = textarea.value.length;
+    counter.textContent = `${len} / ${POST_MAX}`;
+    counter.classList.toggle('over', len > POST_MAX);
+  }
+
+  textarea.addEventListener('input', () => {
+    updateCounter();
+    clearError(textarea);
+  });
+
+  form.querySelectorAll('input[name="categories"]').forEach(cb =>
+    cb.addEventListener('change', clearCategoryError)
+  );
+
+  updateCounter();
+
+  form.addEventListener('submit', function (e) {
+    let ok = true;
+
+    if (!textarea.value.trim()) {
+      showError(textarea, '投稿内容を入力してください');
+      ok = false;
+    } else if (textarea.value.length > POST_MAX) {
+      showError(textarea, `${POST_MAX}文字以内で入力してください`);
+      ok = false;
+    }
+
+    if (form.querySelectorAll('input[name="categories"]:checked').length === 0) {
+      showCategoryError('カテゴリを1つ以上選択してください');
+      ok = false;
+    }
+
+    if (!ok) e.preventDefault();
+  });
+})();
+</script>
 {% endblock %}

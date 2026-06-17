@@ -8,15 +8,15 @@
 
     <form method="POST" action="{{ url_for('login') }}" class="auth-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        
+
         <div class="form-group">
             <label for="email">メールアドレス</label>
-            <input type="email" id="email" name="email" required placeholder="example@email.com">
+            <input type="email" id="email" name="email" placeholder="example@email.com">
         </div>
 
         <div class="form-group">
             <label for="password">パスワード</label>
-            <input type="password" id="password" name="password" required placeholder="パスワードを入力">
+            <input type="password" id="password" name="password" placeholder="パスワードを入力">
         </div>
 
         <button type="submit" class="btn btn-primary">ログイン</button>
@@ -25,4 +25,57 @@
         新規登録は<a href="{{ url_for('register')}}">こちら</a>
     </p>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const form = document.querySelector('.auth-form');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+
+  function showError(input, msg) {
+    input.classList.add('is-invalid');
+    let span = input.parentElement.querySelector('.field-error-msg');
+    if (!span) {
+      span = document.createElement('span');
+      span.className = 'field-error-msg';
+      input.parentElement.appendChild(span);
+    }
+    span.textContent = msg;
+  }
+
+  function clearError(input) {
+    input.classList.remove('is-invalid');
+    const span = input.parentElement.querySelector('.field-error-msg');
+    if (span) span.textContent = '';
+  }
+
+  function isValidEmail(v) {
+    return /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(v);
+  }
+
+  [emailInput, passwordInput].forEach(el => el.addEventListener('input', () => clearError(el)));
+
+  form.addEventListener('submit', function (e) {
+    let ok = true;
+    const email = emailInput.value.trim();
+
+    if (!email) {
+      showError(emailInput, 'メールアドレスを入力してください');
+      ok = false;
+    } else if (!isValidEmail(email)) {
+      showError(emailInput, 'メールアドレスの形式が正しくありません');
+      ok = false;
+    }
+
+    if (!passwordInput.value) {
+      showError(passwordInput, 'パスワードを入力してください');
+      ok = false;
+    }
+
+    if (!ok) e.preventDefault();
+  });
+})();
+</script>
 {% endblock %}
