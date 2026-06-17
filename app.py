@@ -1029,6 +1029,15 @@ def delete_post(post_id):
         cursor.close()
         conn.close()
 
+# エラーハンドラ
+@app.errorhandler(404)
+def not_found(_e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(_e):
+    return render_template('500.html'), 500
+
 # このファイルを直接実行した時にFlaskサーバーを起動
 # debug=True = エラーが見やすくなる開発モード
 if __name__ == '__main__':
