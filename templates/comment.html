@@ -22,6 +22,11 @@
         <div class="post-content">
             {{ post.content }}
         </div>
+        <div class="post-actions">
+            <button class="btn-like {% if post.is_liked %}active{% endif %}" onclick="toggleLike('{{ post.id }}')">
+                ❤️ {{ post.like_count }}
+            </button>
+        </div>
     </article>
     <!-- コメント一覧 -->
     <div class="comments-section">
@@ -66,5 +71,22 @@
     </div>
 
 </div><!-- .comment-container -->
+
+<script>
+    function toggleLike(postId) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/post/${postId}/like`;
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = '{{ csrf_token() }}';
+        form.appendChild(csrfInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
 
 {% endblock %}

@@ -74,6 +74,9 @@
         </div>
 
         <div class="post-actions">
+            <button class="btn-like {% if post.is_liked %}active{% endif %}" data-post-id="{{ post.id }}" onclick="toggleLike('{{ post.id }}')">
+                ❤️ {{ post.like_count }}
+            </button>
             <button class="btn-favorite {% if post.is_favorited %}active{% endif %}" data-post-id="{{ post.id }}" onclick="toggleFavorite('{{ post.id }}')">
                 🧡お気に入り
             </button>
@@ -98,6 +101,21 @@
        const form = document.createElement('form');
        form.method = 'POST';
        form.action = `/post/${postId}/favorite`;
+
+       const csrfInput = document.createElement('input');
+       csrfInput.type = 'hidden';
+       csrfInput.name = 'csrf_token';
+       csrfInput.value = '{{ csrf_token() }}';
+       form.appendChild(csrfInput);
+
+       document.body.appendChild(form);
+       form.submit();
+    }
+
+    function toggleLike(postId) {
+       const form = document.createElement('form');
+       form.method = 'POST';
+       form.action = `/post/${postId}/like`;
 
        const csrfInput = document.createElement('input');
        csrfInput.type = 'hidden';
