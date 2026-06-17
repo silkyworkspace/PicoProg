@@ -76,9 +76,7 @@
             {% endfor %}
         </div>
 
-        <div class="post-content">
-            {{ post.content }}
-        </div>
+        <div class="post-content">{{ post.content }}</div>
 
         <div class="post-actions">
             <button class="btn-like {% if post.is_liked %}active{% endif %}" data-post-id="{{ post.id }}" onclick="toggleLike('{{ post.id }}')">
