@@ -19,6 +19,18 @@
     {% if session.user_id %}
     <div class="page-wrapper">
         <aside class="sidebar">
+            <div class="sidebar-user">
+                {% if session.user_icon %}
+                <img src="{{ url_for('static', filename='uploads/' + session.user_icon) }}"
+                     alt="{{ session.username }}" class="sidebar-icon">
+                {% else %}
+                <div class="sidebar-icon sidebar-icon-default">{{ session.username[0] | upper }}</div>
+                {% endif %}
+                <div class="sidebar-bubble" title="{{ session.username }}">
+                    <span class="sidebar-username">{{ session.username }}</span>
+                    <span class="sidebar-label">でログイン中</span>
+                </div>
+            </div>
             <nav class="main-nav">
                 <a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}class="active"{% endif %}>タイムライン</a>
                 <a href="{{ url_for('new_post') }}" {% if request.endpoint == 'new_post' %}class="active"{% endif %}>投稿する</a>

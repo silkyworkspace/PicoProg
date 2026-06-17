@@ -37,7 +37,7 @@
         <div class="comment">
             <div class="comment-header">
                 <div class="user-info">
-                    <img src="{{ url_for('static', filename='uploads/' + post.icon_path) if post.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
+                    <img src="{{ url_for('static', filename='uploads/' + comment.icon_path) if comment.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
                         alt="アイコン" class="user-icon">
                     <span class="username">{{ comment.username }}</span>
                 </div>

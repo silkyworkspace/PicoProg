@@ -10,12 +10,18 @@
     <div class="filter-body" id="filter-body">
         <form method="GET" action="{{ url_for('index') }}">
             <div class="search-box">
-                <input
-                    type="text"
-                    name="keyword"
-                    placeholder="キーワードで検索"
-                    value="{{ request.args.get('keyword', '') }}"
-                    class="search-input">
+                <div class="search-input-wrap">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="8.5" cy="8.5" r="5.5"/>
+                        <line x1="13" y1="13" x2="18" y2="18"/>
+                    </svg>
+                    <input
+                        type="text"
+                        name="keyword"
+                        placeholder="キーワードで検索"
+                        value="{{ request.args.get('keyword', '') }}"
+                        class="search-input">
+                </div>
             </div>
             <h4>カテゴリ</h4>
             <div class="category-filters">
