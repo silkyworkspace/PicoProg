@@ -544,17 +544,17 @@ button[type="submit"].btn:hover {
   background: #EFF6FF;
 }
 
-/* お気に入り：ピンク */
+/* お気に入り：イエロー */
 .btn-favorite:hover {
-  border-color: #ec4899;
-  color: #9d174d;
-  background: #fdf2f8;
+  border-color: #EAB308;
+  color: #A16207;
+  background: #FEFCE8;
 }
 
 .btn-favorite.active {
-  border-color: #ec4899;
-  color: #9d174d;
-  background: #fdf2f8;
+  border-color: #EAB308;
+  color: #A16207;
+  background: #FEFCE8;
 }
 
 .no-posts,

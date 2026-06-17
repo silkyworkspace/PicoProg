@@ -29,7 +29,7 @@
                 {{ post.like_count }}
             </button>
             <button class="btn-favorite active" data-post-id="{{ post.id }}" onclick="toggleFavorite('{{ post.id }}')">
-                <img src="{{ url_for('static', filename='icons/heart_active.svg' if post.is_favorited else 'icons/heart.svg') }}" alt="お気に入り" class="btn-icon">
+                <img src="{{ url_for('static', filename='icons/star_active.svg' if post.is_favorited else 'icons/star.svg') }}" alt="お気に入り" class="btn-icon">
                 お気に入り
             </button>
             <a href="{{ url_for('comment', post_id=post.id) }}" class="btn-comment">
