@@ -1,6 +1,6 @@
 /* ===== TOKENS ===== */
 :root {
-  --green:      #02D862;
+  --green:      #07b53b;
   --green-btn:  #01c158;
   --green-dark: #018a38;
   --green-wash: rgba(2, 216, 98, 0.09);
@@ -297,8 +297,8 @@ button[type="submit"].btn:hover {
 
 .post-date {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--muted);
+  font-size: 0.78rem;
+  color: #8A8F9D;
 }
 
 /* ===== CATEGORY TAGS ===== */
@@ -357,8 +357,6 @@ button[type="submit"].btn:hover {
   transition: border-color 0.12s, color 0.12s, background 0.12s;
 }
 
-.btn-like:hover,
-.btn-favorite:hover,
 .btn-comment:hover,
 .btn-edit:hover {
   border-color: var(--green);
@@ -366,22 +364,36 @@ button[type="submit"].btn:hover {
   background: var(--green-wash);
 }
 
-.btn-like.active {
-  border-color: #e05252;
-  color: #c0392b;
-  background: #fef0f0;
+.btn-icon {
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: middle;
 }
 
+/* いいね：青 */
 .btn-like:hover {
-  border-color: #e05252;
-  color: #c0392b;
-  background: #fef0f0;
+  border-color: #3B82F6;
+  color: #1D4ED8;
+  background: #EFF6FF;
+}
+
+.btn-like.active {
+  border-color: #3B82F6;
+  color: #1D4ED8;
+  background: #EFF6FF;
+}
+
+/* お気に入り：ピンク */
+.btn-favorite:hover {
+  border-color: #ec4899;
+  color: #9d174d;
+  background: #fdf2f8;
 }
 
 .btn-favorite.active {
-  border-color: var(--green);
-  color: #016830;
-  background: var(--green-wash);
+  border-color: #ec4899;
+  color: #9d174d;
+  background: #fdf2f8;
 }
 
 .no-posts,
