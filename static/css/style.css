@@ -303,6 +303,15 @@ button[type="submit"].btn:hover {
   border-color: var(--line);
 }
 
+.btn-danger {
+    background-color: #ef4444;
+    color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c;
+}
+
 /* ===== FILTER SECTION ===== */
 .filter-section {
   background: var(--surface);

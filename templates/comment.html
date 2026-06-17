@@ -19,9 +19,7 @@
             <span class="category-tag">{{ category }}</span>
             {% endfor %}
         </div>
-        <div class="post-content">
-            {{ post.content }}
-        </div>
+        <div class="post-content">{{ post.content }}</div>
         <div class="post-actions">
             <button class="btn-like {% if post.is_liked %}active{% endif %}" onclick="toggleLike('{{ post.id }}')">
                 <img src="{{ url_for('static', filename='icons/thumb_up_active.svg' if post.is_liked else 'icons/thumb_up.svg') }}" alt="いいね" class="btn-icon">
@@ -43,9 +41,7 @@
                 </div>
                 <span class="post-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
             </div>
-            <div class="comment-content">
-                {{ comment.content }}
-            </div>
+            <div class="comment-content">{{ comment.content }}</div>
         </div>
         {% endfor %}
 
