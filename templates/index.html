@@ -67,7 +67,14 @@
                     alt="アイコン" class="user-icon">
                 <span class="username">{{ post.username }}</span>
             </div>
-            <span class="post-date">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            <div class="post-header-right">
+                <span class="post-date">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                {% if post.user_id == session.user_id %}
+                <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn-edit">
+                    <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="編集" class="btn-icon">
+                </a>
+                {% endif %}
+            </div>
         </div>
 
         <div class="post-categories">
@@ -85,18 +92,12 @@
             </button>
             <button class="btn-favorite {% if post.is_favorited %}active{% endif %}" data-post-id="{{ post.id }}" onclick="toggleFavorite('{{ post.id }}')">
                 <img src="{{ url_for('static', filename='icons/star_active.svg' if post.is_favorited else 'icons/star.svg') }}" alt="お気に入り" class="btn-icon">
-                お気に入り
+                {{ post.favorite_count }}
             </button>
             <a href="{{ url_for('comment', post_id=post.id) }}" class="btn-comment">
                 <img src="{{ url_for('static', filename='icons/comment.svg') }}" alt="コメント" class="btn-icon">
-                コメント
+                {{ post.comment_count }}
             </a>
-            {% if post.user_id == session.user_id %}
-            <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn-edit">
-                <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="編集" class="btn-icon">
-                編集
-            </a>
-            {% endif %}
         </div>
     </article>
     {% endfor %}
