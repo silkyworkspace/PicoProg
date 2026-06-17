@@ -65,6 +65,17 @@ USE picoprog;
 --     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 -- );
 
+-- likesテーブル
+-- CREATE TABLE likes (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     user_id INT NOT NULL,
+--     post_id INT NOT NULL,
+--     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+--     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+--     UNIQUE KEY unique_user_post_like(user_id, post_id)
+-- );
+
 -- favoritesテーブル
 -- CREATE TABLE favorites (
 --     id INT AUTO_INCREMENT PRIMARY KEY,

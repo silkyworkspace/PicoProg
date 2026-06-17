@@ -8,6 +8,7 @@
 - 学習進捗の投稿（カテゴリタグ付き）
 - 投稿の編集・削除
 - 投稿へのコメント
+- いいね登録・解除（カウント表示付き）
 - お気に入り登録・解除
 - キーワード検索・カテゴリ絞り込み
 - プロフィール編集（アイコン画像アップロード対応）
@@ -84,3 +85,14 @@ python app.py
 | フロントエンド(HTML/CSS/JS) | 技術 |
 | その他 | 技術 |
 
+## 使用アイコン・ライセンス
+
+このプロジェクトでは、以下のアイコンを使用しています。
+
+- Lucide
+  - License: ISC License
+  - https://lucide.dev/license
+
+- Google Material Symbols / Material Icons
+  - License: Apache License 2.0
+  - https://github.com/google/material-design-icons
