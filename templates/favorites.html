@@ -36,18 +36,21 @@
 
         <div class="post-actions">
             <button class="btn-like {% if post.is_liked %}active{% endif %}" data-post-id="{{ post.id }}" onclick="toggleLike('{{ post.id }}')">
-                ❤️ {{ post.like_count }}
+                <img src="{{ url_for('static', filename='icons/thumb_up_active.svg' if post.is_liked else 'icons/thumb_up.svg') }}" alt="いいね" class="btn-icon">
+                {{ post.like_count }}
             </button>
-            <button class="btn-favorite active" data-post-id="{{ post.id }}"
-                onclick="toggleFavorite('{{ post.id }}')">
-                🧡お気に入り
+            <button class="btn-favorite active" data-post-id="{{ post.id }}" onclick="toggleFavorite('{{ post.id }}')">
+                <img src="{{ url_for('static', filename='icons/heart_active.svg' if post.is_favorited else 'icons/heart.svg') }}" alt="お気に入り" class="btn-icon">
+                お気に入り
             </button>
             <a href="{{ url_for('comment', post_id=post.id) }}" class="btn-comment">
-                💬コメント
+                <img src="{{ url_for('static', filename='icons/comment.svg') }}" alt="コメント" class="btn-icon">
+                コメント
             </a>
             {% if post.user_id == session.user_id %}
             <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn-edit">
-                ✏️編集
+                <img src="{{ url_for('static', filename='icons/edit.svg') }}" alt="編集" class="btn-icon">
+                編集
             </a>
             {% endif %}
         </div>

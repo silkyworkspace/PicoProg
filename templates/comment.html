@@ -24,7 +24,8 @@
         </div>
         <div class="post-actions">
             <button class="btn-like {% if post.is_liked %}active{% endif %}" onclick="toggleLike('{{ post.id }}')">
-                ❤️ {{ post.like_count }}
+                <img src="{{ url_for('static', filename='icons/thumb_up_active.svg' if post.is_liked else 'icons/thumb_up.svg') }}" alt="いいね" class="btn-icon">
+                {{ post.like_count }}
             </button>
         </div>
     </article>
