@@ -202,16 +202,23 @@ def index():
                     SELECT id FROM favorites
                     WHERE user_id = %s AND post_id = %s
                 ''', (session['user_id'], post['id']))
-
-                # ステップ1: SQLを実行して1件取得
                 result = cursor.fetchone()
-                print(result)
-
-                # ステップ2: result が None でないか判定
-                # ステップ3: 結果を代入 
                 post['is_favorited'] = result is not None
+
+                cursor.execute(
+                    'SELECT id FROM likes WHERE user_id = %s AND post_id = %s',
+                    (session['user_id'], post['id'])
+                )
+                post['is_liked'] = cursor.fetchone() is not None
             else:
                 post['is_favorited'] = False
+                post['is_liked'] = False
+
+            cursor.execute(
+                'SELECT COUNT(*) AS cnt FROM likes WHERE post_id = %s',
+                (post['id'],)
+            )
+            post['like_count'] = cursor.fetchone()['cnt']
 
         return render_template('index.html', posts=posts)
     
@@ -451,6 +458,19 @@ def favorites():
             post['category_ids'] = [cat['id'] for cat in categories] #リスト内包表記
 
             post['is_favorited'] = True
+
+            cursor.execute(
+                'SELECT id FROM likes WHERE user_id = %s AND post_id = %s',
+                (session['user_id'], post['id'])
+            )
+            post['is_liked'] = cursor.fetchone() is not None
+
+            cursor.execute(
+                'SELECT COUNT(*) AS cnt FROM likes WHERE post_id = %s',
+                (post['id'],)
+            )
+            post['like_count'] = cursor.fetchone()['cnt']
+
         return render_template('favorites.html', posts=posts)
     
     except mysql.connector.Error as err:
@@ -769,6 +789,18 @@ def comment(post_id):
         categories = cursor.fetchall()
         post['categories'] = [cat['name'] for cat in categories]
 
+        # いいね情報を取得
+        cursor.execute(
+            'SELECT id FROM likes WHERE user_id = %s AND post_id = %s',
+            (session['user_id'], post['id'])
+        )
+        post['is_liked'] = cursor.fetchone() is not None
+        cursor.execute(
+            'SELECT COUNT(*) AS cnt FROM likes WHERE post_id = %s',
+            (post['id'],)
+        )
+        post['like_count'] = cursor.fetchone()['cnt']
+
         # コメント一覧の取得
         cursor.execute('''
                 SELECT
@@ -840,6 +872,48 @@ def comment(post_id):
     finally:
         cursor.close()
         conn.close()
+
+# いいね登録/解除のルート
+@app.route('/post/<int:post_id>/like', methods=['POST'])
+@login_required
+def toggle_like(post_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT id FROM posts WHERE id = %s', (post_id,))
+        if not cursor.fetchone():
+            flash('投稿が見つかりません', 'error')
+            return redirect(url_for('index'))
+
+        cursor.execute(
+            'SELECT id FROM likes WHERE user_id = %s AND post_id = %s',
+            (session['user_id'], post_id)
+        )
+        like = cursor.fetchone()
+
+        if like:
+            cursor.execute(
+                'DELETE FROM likes WHERE user_id = %s AND post_id = %s',
+                (session['user_id'], post_id)
+            )
+        else:
+            cursor.execute(
+                'INSERT INTO likes (user_id, post_id) VALUES (%s, %s)',
+                (session['user_id'], post_id)
+            )
+
+        conn.commit()
+        return redirect(request.referrer or url_for('index'))
+
+    except mysql.connector.Error as err:
+        flash(f'処理に失敗しました: {err}', 'error')
+        return redirect(url_for('index'))
+
+    finally:
+        cursor.close()
+        conn.close()
+
 
 # delete_post 投稿を削除する処理
 @app.route('/post/<int:post_id>/delete', methods=['POST']) #メソッドをPOSTのみに...GETでの削除は危険（URLアクセスだけで削除されてしまう）

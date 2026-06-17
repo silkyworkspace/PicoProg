@@ -337,6 +337,7 @@ button[type="submit"].btn:hover {
   flex-wrap: wrap;
 }
 
+.btn-like,
 .btn-favorite,
 .btn-comment,
 .btn-edit {
@@ -356,12 +357,25 @@ button[type="submit"].btn:hover {
   transition: border-color 0.12s, color 0.12s, background 0.12s;
 }
 
+.btn-like:hover,
 .btn-favorite:hover,
 .btn-comment:hover,
 .btn-edit:hover {
   border-color: var(--green);
   color: var(--ink);
   background: var(--green-wash);
+}
+
+.btn-like.active {
+  border-color: #e05252;
+  color: #c0392b;
+  background: #fef0f0;
+}
+
+.btn-like:hover {
+  border-color: #e05252;
+  color: #c0392b;
+  background: #fef0f0;
 }
 
 .btn-favorite.active {
