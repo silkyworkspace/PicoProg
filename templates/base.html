@@ -16,17 +16,38 @@
         <h1><a href="/">Pico<span class="logo-accent">Prog</span></a></h1>
     </header>
 
-    <main>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert-{{ category }}">{{message}}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+    {% if session.user_id %}
+    <div class="page-wrapper">
+        <aside class="sidebar">
+            <nav class="main-nav">
+                <a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}class="active"{% endif %}>タイムライン</a>
+                <a href="{{ url_for('new_post') }}" {% if request.endpoint == 'new_post' %}class="active"{% endif %}>投稿する</a>
+                <a href="{{ url_for('favorites') }}" {% if request.endpoint == 'favorites' %}class="active"{% endif %}>お気に入り</a>
+                <a href="{{ url_for('user_settings') }}" {% if request.endpoint == 'user_settings' %}class="active"{% endif %}>ユーザー設定</a>
+                <a href="{{ url_for('logout') }}">ログアウト</a>
+            </nav>
+            {% block sidebar_extra %}{% endblock %}
+        </aside>
+        <main>
+    {% else %}
+    <main class="main-auth">
+    {% endif %}
 
-        {% block content %}{% endblock %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+
+    {% if session.user_id %}
+        </main>
+    </div>
+    {% else %}
     </main>
+    {% endif %}
 
     <footer>
         <p><small>&copy; 2025 PicoProg</small></p>
