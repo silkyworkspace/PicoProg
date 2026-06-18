@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
 
 # .envファイルを読み込む
@@ -14,6 +15,9 @@ class Config:
     # セッション設定
     # SECRET_KEY = os.getenv('SECRET_KEY', os.urandom(24)) # セッション暗号化用のランダムキー
     SECRET_KEY = os.getenv('SECRET_KEY') # SECRET_KEYを固定値に変更
+
+    # セッション有効期限（ログインから2時間）
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
 
     # アップロードフォルダ設定
     UPLOAD_FOLDER = 'static/uploads'
