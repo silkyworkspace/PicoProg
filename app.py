@@ -17,6 +17,7 @@ MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 USERNAME_MIN = 3
 USERNAME_MAX = 20
 POST_MAX = 1000
+PER_PAGE = 10
 
 def _validate_email(email):
     pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
@@ -158,6 +159,11 @@ def index():
         # 絞り込みパラメーターを取得
         keyword = request.args.get('keyword', '').strip()
         category_ids = request.args.getlist('category') #複数選択可能
+        # URLの ?page=2 のような値を取得。未指定なら1ページ目
+        page = request.args.get('page', 1, type=int)
+        # 不正な値（0やマイナス）は1に補正
+        if page < 1:
+            page = 1
         print(f"keyword: {keyword}")
         print(f"category_ids: {category_ids}")
 
@@ -204,8 +210,23 @@ def index():
         sql += ' ORDER BY p.created_at DESC'
         print(f'sql: {sql}')
 
-        # SQLを実行
-        cursor.execute(sql, tuple(params))
+        # 絞り込み済みの条件で総件数を取得する
+        # サブクエリ（FROM の中に元のSQLをそのまま入れる）で件数を数える
+        count_sql = f'SELECT COUNT(*) AS total FROM ({sql}) AS sub'
+        cursor.execute(count_sql, tuple(params))
+        total = cursor.fetchone()['total']
+
+        # 総ページ数を計算（端数は切り上げ。例: 15件÷10件=1.5→2ページ）
+        # -(-total // PER_PAGE) は切り上げ除算の慣用表現
+        total_pages = max(1, -(-total // PER_PAGE))
+
+        # 何件目から取得するかを計算する（2ページ目なら10件スキップ）
+        offset = (page - 1) * PER_PAGE
+
+        # LIMIT: 最大何件取るか / OFFSET: 何件目から取るか
+        sql += ' LIMIT %s OFFSET %s'
+        # パラメータの末尾に LIMIT と OFFSET の値を追加して実行
+        cursor.execute(sql, tuple(params) + (PER_PAGE, offset))
         posts = cursor.fetchall()
         print(f'posts: {posts}')
 
@@ -262,11 +283,11 @@ def index():
             )
             post['like_count'] = cursor.fetchone()['cnt']
 
-        return render_template('index.html', posts=posts)
-    
+        return render_template('index.html', posts=posts, page=page, total_pages=total_pages)
+
     except mysql.connector.Error as err:
         flash(f'投稿の取得に失敗しました: {err}', 'error')
-        return render_template('index.html', posts=[])
+        return render_template('index.html', posts=[], page=1, total_pages=1)
     
     finally:
         cursor.close()

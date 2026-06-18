@@ -587,6 +587,53 @@ button[type="submit"].btn:hover {
   font-size: 0.9rem;
 }
 
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 1.75rem 0 0.5rem;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+  border-color: var(--green);
+  color: var(--ink);
+  background: var(--green-wash);
+}
+
+.page-btn.active {
+  background: var(--green-btn);
+  border-color: var(--green-btn);
+  color: #fff;
+}
+
+.page-btn.disabled {
+  color: var(--line);
+  cursor: default;
+  background: transparent;
+  border-color: transparent;
+}
+
 /* ===== AUTH FORMS ===== */
 .auth-container {
   width: 100%;
