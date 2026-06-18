@@ -82,7 +82,9 @@
 {% endif %}
 
 <script>
-    const CSRF_TOKEN = '{{ csrf_token() }}';
+    const CSRF_TOKEN      = '{{ csrf_token() }}';
+    const LIKE_COLORS     = ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'];
+    const FAVORITE_COLORS = ['#EAB308', '#FCD34D', '#FDE68A', '#F59E0B'];
 
     async function toggleLike(btn) {
         const postId = btn.dataset.postId;
@@ -95,6 +97,7 @@
             btn.classList.toggle('active', data.liked);
             btn.querySelector('img').src = data.liked ? btn.dataset.activeIcon : btn.dataset.inactiveIcon;
             btn.querySelector('.count').textContent = data.like_count;
+            if (data.liked) spawnParticles(btn, LIKE_COLORS);
         } catch (e) {
             console.error('いいねの更新に失敗しました', e);
         }
@@ -111,6 +114,7 @@
             btn.classList.toggle('active', data.favorited);
             btn.querySelector('img').src = data.favorited ? btn.dataset.activeIcon : btn.dataset.inactiveIcon;
             btn.querySelector('.count').textContent = data.favorite_count;
+            if (data.favorited) spawnParticles(btn, FAVORITE_COLORS);
         } catch (e) {
             console.error('お気に入りの更新に失敗しました', e);
         }

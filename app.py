@@ -912,6 +912,18 @@ def comment(post_id):
         )
         post['like_count'] = cursor.fetchone()['cnt']
 
+        # お気に入り情報を取得
+        cursor.execute(
+            'SELECT id FROM favorites WHERE user_id = %s AND post_id = %s',
+            (session['user_id'], post['id'])
+        )
+        post['is_favorited'] = cursor.fetchone() is not None
+        cursor.execute(
+            'SELECT COUNT(*) AS cnt FROM favorites WHERE post_id = %s',
+            (post['id'],)
+        )
+        post['favorite_count'] = cursor.fetchone()['cnt']
+
         # コメント一覧の取得
         cursor.execute('''
                 SELECT
