@@ -18,14 +18,13 @@
 
         <div class="form-group">
             <label for="icon">アイコン画像</label>
-            <input type="file" id="icon" name="icon" accept="image/*">
-            {% if user and user.icon_path %}
             <div class="current-icon">
-                <p>現在のアイコン:</p>
-                <img src="{{ url_for('static', filename='uploads/' + user.icon_path) }}" alt="現在のアイコン"
-                    class="preview-icon">
+                <img id="icon-preview"
+                     src="{{ url_for('static', filename='uploads/' + user.icon_path) if user and user.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
+                     alt="アイコンプレビュー"
+                     class="preview-icon">
             </div>
-            {% endif %}
+            <input type="file" id="icon" name="icon" accept="image/*">
         </div>
 
         <div class="form-group">
@@ -43,4 +42,15 @@
 
 </div><!-- .post-form-container -->
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('icon').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        // 選択したファイルの一時URLを生成してプレビューに反映
+        document.getElementById('icon-preview').src = URL.createObjectURL(file);
+    });
+</script>
 {% endblock %}
