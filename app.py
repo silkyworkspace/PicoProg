@@ -512,7 +512,22 @@ def favorites():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # お気に入り登録した投稿を取得
+        page = request.args.get('page', 1, type=int)
+        if page < 1:
+            page = 1
+
+        # 総件数を取得
+        cursor.execute('''
+            SELECT COUNT(*) AS total
+            FROM favorites
+            WHERE user_id = %s
+        ''', (session['user_id'],))
+        total = cursor.fetchone()['total']
+        total_pages = max(1, -(-total // PER_PAGE))
+
+        offset = (page - 1) * PER_PAGE
+
+        # お気に入り登録した投稿を取得（ページ分だけ）
         cursor.execute('''
             SELECT
                     p.id,
@@ -528,7 +543,8 @@ def favorites():
             JOIN favorites f ON p.id = f.post_id
             WHERE f.user_id = %s
             ORDER BY f.created_at DESC
-        ''', (session['user_id'], ))
+            LIMIT %s OFFSET %s
+        ''', (session['user_id'], PER_PAGE, offset))
 
         posts = cursor.fetchall()
 
@@ -559,11 +575,11 @@ def favorites():
             )
             post['like_count'] = cursor.fetchone()['cnt']
 
-        return render_template('favorites.html', posts=posts)
-    
+        return render_template('favorites.html', posts=posts, page=page, total_pages=total_pages)
+
     except mysql.connector.Error as err:
         flash(f'投稿の取得に失敗しました: {err}', 'error')
-        return render_template('index.html', posts=[])
+        return render_template('favorites.html', posts=[], page=1, total_pages=1)
     
     finally:
         cursor.close()
