@@ -86,13 +86,21 @@
         <div class="post-content">{{ post.content }}</div>
 
         <div class="post-actions">
-            <button class="btn-like {% if post.is_liked %}active{% endif %}" data-post-id="{{ post.id }}" onclick="toggleLike('{{ post.id }}')">
+            <button class="btn-like {% if post.is_liked %}active{% endif %}"
+                    data-post-id="{{ post.id }}"
+                    data-active-icon="{{ url_for('static', filename='icons/thumb_up_active.svg') }}"
+                    data-inactive-icon="{{ url_for('static', filename='icons/thumb_up.svg') }}"
+                    onclick="toggleLike(this)">
                 <img src="{{ url_for('static', filename='icons/thumb_up_active.svg' if post.is_liked else 'icons/thumb_up.svg') }}" alt="いいね" class="btn-icon">
-                {{ post.like_count }}
+                <span class="count">{{ post.like_count }}</span>
             </button>
-            <button class="btn-favorite {% if post.is_favorited %}active{% endif %}" data-post-id="{{ post.id }}" onclick="toggleFavorite('{{ post.id }}')">
+            <button class="btn-favorite {% if post.is_favorited %}active{% endif %}"
+                    data-post-id="{{ post.id }}"
+                    data-active-icon="{{ url_for('static', filename='icons/star_active.svg') }}"
+                    data-inactive-icon="{{ url_for('static', filename='icons/star.svg') }}"
+                    onclick="toggleFavorite(this)">
                 <img src="{{ url_for('static', filename='icons/star_active.svg' if post.is_favorited else 'icons/star.svg') }}" alt="お気に入り" class="btn-icon">
-                {{ post.favorite_count }}
+                <span class="count">{{ post.favorite_count }}</span>
             </button>
             <a href="{{ url_for('comment', post_id=post.id) }}" class="btn-comment">
                 <img src="{{ url_for('static', filename='icons/comment.svg') }}" alt="コメント" class="btn-icon">
@@ -130,29 +138,42 @@
 </nav>
 {% endif %}
 <script>
-    function toggleFavorite(postId) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/post/${postId}/favorite`;
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrf_token';
-        csrfInput.value = '{{ csrf_token() }}';
-        form.appendChild(csrfInput);
-        document.body.appendChild(form);
-        form.submit();
+    const CSRF_TOKEN = '{{ csrf_token() }}';
+
+    async function toggleLike(btn) {
+        const postId = btn.dataset.postId;
+        try {
+            const res = await fetch(`/post/${postId}/like`, {
+                method: 'POST',
+                // CSRFトークンをヘッダーに付けて送信
+                headers: { 'X-CSRFToken': CSRF_TOKEN }
+            });
+            const data = await res.json();
+            // active クラスでボタンの色を切り替え
+            btn.classList.toggle('active', data.liked);
+            // アイコン画像を差し替え
+            btn.querySelector('img').src = data.liked ? btn.dataset.activeIcon : btn.dataset.inactiveIcon;
+            // カウントを更新
+            btn.querySelector('.count').textContent = data.like_count;
+        } catch (e) {
+            console.error('いいねの更新に失敗しました', e);
+        }
     }
-    function toggleLike(postId) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/post/${postId}/like`;
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrf_token';
-        csrfInput.value = '{{ csrf_token() }}';
-        form.appendChild(csrfInput);
-        document.body.appendChild(form);
-        form.submit();
+
+    async function toggleFavorite(btn) {
+        const postId = btn.dataset.postId;
+        try {
+            const res = await fetch(`/post/${postId}/favorite`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF_TOKEN }
+            });
+            const data = await res.json();
+            btn.classList.toggle('active', data.favorited);
+            btn.querySelector('img').src = data.favorited ? btn.dataset.activeIcon : btn.dataset.inactiveIcon;
+            btn.querySelector('.count').textContent = data.favorite_count;
+        } catch (e) {
+            console.error('お気に入りの更新に失敗しました', e);
+        }
     }
 </script>
 {% endblock %}
