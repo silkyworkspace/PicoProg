@@ -29,6 +29,14 @@
                 <img src="{{ url_for('static', filename='icons/thumb_up_active.svg' if post.is_liked else 'icons/thumb_up.svg') }}" alt="いいね" class="btn-icon">
                 <span class="count">{{ post.like_count }}</span>
             </button>
+            <button class="btn-favorite {% if post.is_favorited %}active{% endif %}"
+                    data-post-id="{{ post.id }}"
+                    data-active-icon="{{ url_for('static', filename='icons/star_active.svg') }}"
+                    data-inactive-icon="{{ url_for('static', filename='icons/star.svg') }}"
+                    onclick="toggleFavorite(this)">
+                <img src="{{ url_for('static', filename='icons/star_active.svg' if post.is_favorited else 'icons/star.svg') }}" alt="お気に入り" class="btn-icon">
+                <span class="count">{{ post.favorite_count }}</span>
+            </button>
         </div>
     </article>
     <!-- コメント一覧 -->
@@ -57,7 +65,7 @@
         {% endfor %}
 
         {% if not comments %}
-        <p class="no-comments">まだコメントありません</p>
+        <p class="no-comments">まだコメントがありません</p>
         {% endif %}
     </div><!-- .comments-section -->
 
@@ -95,7 +103,9 @@
         f.submit();
     }
 
-    const CSRF_TOKEN = '{{ csrf_token() }}';
+    const CSRF_TOKEN      = '{{ csrf_token() }}';
+    const LIKE_COLORS     = ['#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE'];
+    const FAVORITE_COLORS = ['#EAB308', '#FCD34D', '#FDE68A', '#F59E0B'];
 
     async function toggleLike(btn) {
         const postId = btn.dataset.postId;
@@ -108,8 +118,26 @@
             btn.classList.toggle('active', data.liked);
             btn.querySelector('img').src = data.liked ? btn.dataset.activeIcon : btn.dataset.inactiveIcon;
             btn.querySelector('.count').textContent = data.like_count;
+            if (data.liked) spawnParticles(btn, LIKE_COLORS);
         } catch (e) {
             console.error('いいねの更新に失敗しました', e);
+        }
+    }
+
+    async function toggleFavorite(btn) {
+        const postId = btn.dataset.postId;
+        try {
+            const res = await fetch(`/post/${postId}/favorite`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF_TOKEN }
+            });
+            const data = await res.json();
+            btn.classList.toggle('active', data.favorited);
+            btn.querySelector('img').src = data.favorited ? btn.dataset.activeIcon : btn.dataset.inactiveIcon;
+            btn.querySelector('.count').textContent = data.favorite_count;
+            if (data.favorited) spawnParticles(btn, FAVORITE_COLORS);
+        } catch (e) {
+            console.error('お気に入りの更新に失敗しました', e);
         }
     }
 </script>
