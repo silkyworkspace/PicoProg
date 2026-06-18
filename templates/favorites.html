@@ -7,11 +7,11 @@
     {% for post in posts %}
     <article class="post-card">
         <div class="post-header">
-            <div class="user-info">
+            <a class="user-info" href="{{ url_for('user_profile', username=post.username) }}">
                 <img src="{{ url_for('static', filename='uploads/' + post.icon_path) if post.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
                     alt="アイコン" class="user-icon">
                 <span class="username">{{ post.username }}</span>
-            </div>
+            </a>
             <div class="post-header-right">
                 <span class="post-date">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
                 {% if post.user_id == session.user_id %}

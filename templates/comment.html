@@ -7,11 +7,11 @@
     <!-- 元の投稿表示 -->
     <article class="original-post">
         <div class="post-header">
-            <div class="user-info">
+            <a class="user-info" href="{{ url_for('user_profile', username=post.username) }}">
                 <img src="{{ url_for('static', filename='uploads/' + post.icon_path) if post.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
                     alt="アイコン" class="user-icon">
                 <span class="username">{{ post.username }}</span>
-            </div>
+            </a>
             <span class="post-date">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
         </div><!-- .post-header -->
         <div class="post-categories">
@@ -38,11 +38,11 @@
         {% for comment in comments %}
         <div class="comment">
             <div class="comment-header">
-                <div class="user-info">
+                <a class="user-info" href="{{ url_for('user_profile', username=comment.username) }}">
                     <img src="{{ url_for('static', filename='uploads/' + comment.icon_path) if comment.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
                         alt="アイコン" class="user-icon">
                     <span class="username">{{ comment.username }}</span>
-                </div>
+                </a>
                 <div class="comment-meta">
                     <span class="post-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
                     {% if session.user_id == comment.user_id %}

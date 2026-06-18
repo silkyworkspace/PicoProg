@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, abort
 import mysql.connector
 import bcrypt
 import re
@@ -1104,6 +1104,83 @@ def delete_comment(comment_id):
         flash(f'削除に失敗しました: {err}', 'error')
         return redirect(url_for('index'))
     finally:
+        conn.close()
+
+
+@app.route('/user/<username>')
+@login_required
+def user_profile(username):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            'SELECT id, username, profile, icon_path FROM users WHERE username = %s',
+            (username,)
+        )
+        profile_user = cursor.fetchone()
+        if not profile_user:
+            abort(404)
+
+        page = request.args.get('page', 1, type=int)
+        per_page = 10
+        offset = (page - 1) * per_page
+
+        cursor.execute(
+            'SELECT COUNT(*) AS cnt FROM posts WHERE user_id = %s',
+            (profile_user['id'],)
+        )
+        total = cursor.fetchone()['cnt']
+        total_pages = max(1, (total + per_page - 1) // per_page)
+
+        cursor.execute('''
+            SELECT
+                p.id,
+                p.content,
+                p.created_at,
+                p.user_id,
+                u.username,
+                u.icon_path,
+                (SELECT COUNT(*) FROM likes    WHERE post_id = p.id) AS like_count,
+                (SELECT COUNT(*) FROM favorites WHERE post_id = p.id) AS favorite_count,
+                (SELECT COUNT(*) FROM comments  WHERE post_id = p.id) AS comment_count,
+                EXISTS(SELECT 1 FROM likes    WHERE post_id = p.id AND user_id = %s) AS is_liked,
+                EXISTS(SELECT 1 FROM favorites WHERE post_id = p.id AND user_id = %s) AS is_favorited
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.user_id = %s
+            ORDER BY p.created_at DESC
+            LIMIT %s OFFSET %s
+        ''', (session['user_id'], session['user_id'], profile_user['id'], per_page, offset))
+        posts = cursor.fetchall()
+
+        category_map = {}
+        if posts:
+            post_ids = [p['id'] for p in posts]
+            fmt = ','.join(['%s'] * len(post_ids))
+            cursor.execute(f'''
+                SELECT pc.post_id, c.name
+                FROM post_categories pc
+                JOIN categories c ON pc.category_id = c.id
+                WHERE pc.post_id IN ({fmt})
+            ''', post_ids)
+            for row in cursor.fetchall():
+                category_map.setdefault(row['post_id'], []).append(row['name'])
+        for p in posts:
+            p['categories'] = category_map.get(p['id'], [])
+
+        return render_template(
+            'profile.html',
+            profile_user=profile_user,
+            posts=posts,
+            page=page,
+            total_pages=total_pages,
+            post_count=total,
+        )
+    except Exception as err:
+        flash(f'プロフィールの読み込みに失敗しました: {err}', 'error')
+        return redirect(url_for('index'))
+    finally:
+        cursor.close()
         conn.close()
 
 # エラーハンドラ
