@@ -436,6 +436,13 @@ button[type="submit"].btn:hover {
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: opacity 0.12s;
+}
+
+a.user-info:hover {
+  opacity: 0.75;
 }
 
 .user-icon {
@@ -976,6 +983,111 @@ textarea:focus {
   font-size: 0.9rem;
   color: var(--muted);
   margin-bottom: 0.5rem;
+}
+
+/* ===== PROFILE PAGE ===== */
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-header-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.profile-header-top {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-page-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--line);
+  flex-shrink: 0;
+}
+
+.profile-page-icon-default {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-wash);
+  color: var(--green-dark);
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 700;
+  border: 2px solid var(--line);
+  flex-shrink: 0;
+}
+
+.profile-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.profile-page-username {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+
+.profile-page-bio {
+  font-size: 0.875rem;
+  color: var(--ink);
+  line-height: 1.65;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.profile-page-bio--empty {
+  color: var(--muted);
+  font-style: italic;
+  border-top: 1px solid var(--line);
+}
+
+.profile-page-meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.profile-posts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--line);
+}
+
+.profile-posts-heading {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.profile-posts-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
 }
 
 /* ===== FOOTER ===== */
