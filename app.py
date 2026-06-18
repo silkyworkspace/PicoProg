@@ -41,11 +41,6 @@ def _validate_username(username):
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# デバッグ：SECRET_KEYを確認
-print("=" * 50)
-print(f"SECRET_KEY: {app.config['SECRET_KEY']}")
-print(f"SECRET_KEY type: {type(app.config['SECRET_KEY'])}")
-print("=" * 50)
 
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE  # Flaskのファイルサイズ制限
 
@@ -57,11 +52,6 @@ csrf = CSRFProtect(app)
 def inject_csrf_token():
     return dict(csrf_token=generate_csrf)
 
-# デバッグ：CSRFが有効か確認
-print("=" * 50)
-print(f"CSRF Protection enabled: {csrf}")
-print(f"WTF_CSRF_ENABLED: {app.config.get('WTF_CSRF_ENABLED', True)}")
-print("=" * 50)
 
 # データベース接続するための関数
 def get_db_connection():
@@ -164,8 +154,6 @@ def index():
         # 不正な値（0やマイナス）は1に補正
         if page < 1:
             page = 1
-        print(f"keyword: {keyword}")
-        print(f"category_ids: {category_ids}")
 
         # 基本のSQL
         sql = '''
@@ -189,8 +177,6 @@ def index():
         if keyword:
             conditions.append('p.content LIKE %s')
             params.append(f'%{keyword}%') #fがないとただの文字列になってしまう
-            print(f'conditions: {conditions}')
-            print(f'params: {params}')
 
         # カテゴリ絞り込み（複数選択対応）
         if category_ids:
@@ -198,8 +184,6 @@ def index():
             placeholders = ','.join(['%s'] * len(category_ids))
             conditions.append(f'pc.category_id IN ({placeholders})')
             params.extend(category_ids)
-            print(f'conditions: {conditions}')
-            print(f'params: {params}')
         
         # WHERE句を追加
         if conditions:
@@ -208,7 +192,6 @@ def index():
 
         # 並び順
         sql += ' ORDER BY p.created_at DESC'
-        print(f'sql: {sql}')
 
         # 絞り込み済みの条件で総件数を取得する
         # サブクエリ（FROM の中に元のSQLをそのまま入れる）で件数を数える
@@ -228,7 +211,6 @@ def index():
         # パラメータの末尾に LIMIT と OFFSET の値を追加して実行
         cursor.execute(sql, tuple(params) + (PER_PAGE, offset))
         posts = cursor.fetchall()
-        print(f'posts: {posts}')
 
         # 投稿とユーザー情報を取得
         # cursor.execute('''
@@ -318,7 +300,6 @@ def login():
                 'SELECT id, username, password, icon_path FROM users WHERE email = %s', (email,)
             )
             user = cursor.fetchone()
-            print(user)
 
             # ユーザーが存在しない、またはパスワードが間違っている
             if not user or not bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
@@ -327,12 +308,12 @@ def login():
                 return redirect(url_for('login'))
             
             # セッションにユーザー情報を保存
+            session.permanent = True
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['user_icon'] = user['icon_path']
 
             flash(f"{session['username']}さん、ログインしました", 'success')
-            print(session)
             return redirect(url_for('index'))
         
         except mysql.connector.Error as err:
@@ -405,6 +386,7 @@ def register():
             user_id = cursor.lastrowid
 
             # セッションにユーザー情報を保持(自動ログイン)
+            session.permanent = True
             session['user_id'] = user_id
             session['username'] = username
             session['user_icon'] = None
@@ -423,11 +405,7 @@ def register():
 
 @app.route('/logout')
 def logout():
-        # セッションからユーザー情報を削除
-        session.pop('user_id', None)
-        session.pop('username', None)
-
-        print(session)
+        session.clear()
         flash('ログアウトしました', 'success')
         return redirect(url_for('login'))
 
@@ -607,7 +585,6 @@ def toggle_favorite(post_id):
                 SELECT id FROM favorites WHERE user_id = %s AND post_id = %s
                     ''', (session['user_id'], post_id))
         favorite = cursor.fetchone()
-        print(favorite)
 
         if favorite:
             cursor.execute(
@@ -664,7 +641,6 @@ def user_settings():
                 ''', (session['user_id'],))
         
         user = cursor.fetchone()
-        print(user)
 
         # バリデーション
         if not user:
@@ -676,10 +652,6 @@ def user_settings():
             profile = request.form.get('profile')
             icon = request.files.get('icon') # ← 画像ファイル取得
 
-            print(f"username: {username}")
-            print(f"profile: {profile}")
-            print(f"icon: {icon}")
-            print(f"icon.filename: {icon.filename if icon else 'None'}")
 
             # バリデーション
             if not username:
@@ -789,7 +761,6 @@ def edit_post(post_id):
                        ''', (post_id,))
         
         categories = cursor.fetchall()
-        print(f'categories: {categories}')
         post['category_ids'] = [cat['category_id'] for cat in categories]
 
         # POST処理（更新）
@@ -881,7 +852,6 @@ def comment(post_id):
                         WHERE p.id = %s
                         ''', (post_id,))
         post = cursor.fetchone()
-        print(post)
 
         # 投稿が存在しない
         if not post:
