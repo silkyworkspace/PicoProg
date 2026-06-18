@@ -21,9 +21,13 @@
         </div>
         <div class="post-content">{{ post.content }}</div>
         <div class="post-actions">
-            <button class="btn-like {% if post.is_liked %}active{% endif %}" onclick="toggleLike('{{ post.id }}')">
+            <button class="btn-like {% if post.is_liked %}active{% endif %}"
+                    data-post-id="{{ post.id }}"
+                    data-active-icon="{{ url_for('static', filename='icons/thumb_up_active.svg') }}"
+                    data-inactive-icon="{{ url_for('static', filename='icons/thumb_up.svg') }}"
+                    onclick="toggleLike(this)">
                 <img src="{{ url_for('static', filename='icons/thumb_up_active.svg' if post.is_liked else 'icons/thumb_up.svg') }}" alt="いいね" class="btn-icon">
-                {{ post.like_count }}
+                <span class="count">{{ post.like_count }}</span>
             </button>
         </div>
     </article>
@@ -91,19 +95,22 @@
         f.submit();
     }
 
-    function toggleLike(postId) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/post/${postId}/like`;
+    const CSRF_TOKEN = '{{ csrf_token() }}';
 
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrf_token';
-        csrfInput.value = '{{ csrf_token() }}';
-        form.appendChild(csrfInput);
-
-        document.body.appendChild(form);
-        form.submit();
+    async function toggleLike(btn) {
+        const postId = btn.dataset.postId;
+        try {
+            const res = await fetch(`/post/${postId}/like`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': CSRF_TOKEN }
+            });
+            const data = await res.json();
+            btn.classList.toggle('active', data.liked);
+            btn.querySelector('img').src = data.liked ? btn.dataset.activeIcon : btn.dataset.inactiveIcon;
+            btn.querySelector('.count').textContent = data.like_count;
+        } catch (e) {
+            console.error('いいねの更新に失敗しました', e);
+        }
     }
 </script>
 

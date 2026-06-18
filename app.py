@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import mysql.connector
 import bcrypt
 import re
@@ -576,7 +576,7 @@ def toggle_favorite(post_id):
     try:
         # データベース接続
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
         # 登録が存在するか確認
         cursor.execute('''
@@ -594,25 +594,27 @@ def toggle_favorite(post_id):
         print(favorite)
 
         if favorite:
-            # お気に入り解除
-            cursor.execute('''
-                        DELETE FROM favorites WHERE user_id = %s AND post_id = %s
-                        ''', (session['user_id'], post_id))
-            flash('お気に入りから削除しました', 'success')
+            cursor.execute(
+                'DELETE FROM favorites WHERE user_id = %s AND post_id = %s',
+                (session['user_id'], post_id)
+            )
+            is_favorited = False
         else:
-            cursor.execute('''
-            INSERT INTO favorites (user_id, post_id) VALUES (%s, %s)
-            ''', (session['user_id'], post_id))
-            flash('お気に入りに追加しました。', 'success')
-        
+            cursor.execute(
+                'INSERT INTO favorites (user_id, post_id) VALUES (%s, %s)',
+                (session['user_id'], post_id)
+            )
+            is_favorited = True
+
         conn.commit()
 
-        # request.referrer は直前にいたページURLを取得する
-        return redirect(request.referrer or url_for('index'))
-    
+        # 最新のお気に入り数を取得してJSONで返す
+        cursor.execute('SELECT COUNT(*) AS cnt FROM favorites WHERE post_id = %s', (post_id,))
+        favorite_count = cursor.fetchone()['cnt']
+        return jsonify({'favorited': is_favorited, 'favorite_count': favorite_count})
+
     except mysql.connector.Error as err:
-        flash(f'処理に失敗しました: {err}', 'error')
-        return redirect(url_for('index'))
+        return jsonify({'error': str(err)}), 500
     
     finally:
         cursor.close()
@@ -975,7 +977,7 @@ def comment(post_id):
 def toggle_like(post_id):
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
         cursor.execute('SELECT id FROM posts WHERE id = %s', (post_id,))
         if not cursor.fetchone():
@@ -993,18 +995,23 @@ def toggle_like(post_id):
                 'DELETE FROM likes WHERE user_id = %s AND post_id = %s',
                 (session['user_id'], post_id)
             )
+            is_liked = False
         else:
             cursor.execute(
                 'INSERT INTO likes (user_id, post_id) VALUES (%s, %s)',
                 (session['user_id'], post_id)
             )
+            is_liked = True
 
         conn.commit()
-        return redirect(request.referrer or url_for('index'))
+
+        # 最新のいいね数を取得してJSONで返す
+        cursor.execute('SELECT COUNT(*) AS cnt FROM likes WHERE post_id = %s', (post_id,))
+        like_count = cursor.fetchone()['cnt']
+        return jsonify({'liked': is_liked, 'like_count': like_count})
 
     except mysql.connector.Error as err:
-        flash(f'処理に失敗しました: {err}', 'error')
-        return redirect(url_for('index'))
+        return jsonify({'error': str(err)}), 500
 
     finally:
         cursor.close()
