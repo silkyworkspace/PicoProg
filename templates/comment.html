@@ -8,8 +8,11 @@
     <article class="original-post">
         <div class="post-header">
             <a class="user-info" href="{{ url_for('user_profile', username=post.username) }}">
-                <img src="{{ url_for('static', filename='uploads/' + post.icon_path) if post.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
-                    alt="アイコン" class="user-icon">
+                {% if post.icon_path %}
+                <img src="{{ url_for('static', filename='uploads/' + post.icon_path) }}" alt="アイコン" class="user-icon">
+                {% else %}
+                <div class="user-icon sidebar-icon-default">{{ post.username[0] | upper }}</div>
+                {% endif %}
                 <span class="username">{{ post.username }}</span>
             </a>
             <span class="post-date">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
@@ -47,8 +50,11 @@
         <div class="comment">
             <div class="comment-header">
                 <a class="user-info" href="{{ url_for('user_profile', username=comment.username) }}">
-                    <img src="{{ url_for('static', filename='uploads/' + comment.icon_path) if comment.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
-                        alt="アイコン" class="user-icon">
+                    {% if comment.icon_path %}
+                    <img src="{{ url_for('static', filename='uploads/' + comment.icon_path) }}" alt="アイコン" class="user-icon">
+                    {% else %}
+                    <div class="user-icon sidebar-icon-default">{{ comment.username[0] | upper }}</div>
+                    {% endif %}
                     <span class="username">{{ comment.username }}</span>
                 </a>
                 <div class="comment-meta">
