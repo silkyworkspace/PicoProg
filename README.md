@@ -18,9 +18,12 @@
 ## 技術スタック
 
 - **バックエンド**: Python / Flask
-- **データベース**: MySQL
+- **データベース**: SQLite（sqlite3）
 - **認証**: bcrypt（パスワードハッシュ化）
 - **セキュリティ**: Flask-WTF（CSRF保護）、サーバーサイドバリデーション
+- **本番環境**: PythonAnywhere
+
+> **補足:** 開発当初はMySQLを使用していましたが、PythonAnywhere無料プランが2026年1月以降の新規アカウントでMySQL非対応となったため、Python組み込みの sqlite3 に移行しました。
 
 ## バリデーション
 
@@ -44,7 +47,6 @@
 ### 前提条件
 
 - Python 3.x
-- MySQL
 
 ### 手順
 
@@ -71,22 +73,19 @@ pip install -r requirements.txt
 4. `.env` ファイルを作成
 
 ```
-DB_PASSWORD=your_mysql_password
 SECRET_KEY=your_secret_key
 ```
 
-5. MySQLでデータベースを作成
-
-```sql
-CREATE DATABASE picoprog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-6. `database/schema.sql` を参考にテーブルを作成
-
-7. アプリを起動
+5. データベースを初期化
 
 ```bash
-python app.py
+python database/init_db.py
+```
+
+6. アプリを起動
+
+```bash
+flask run
 ```
 
 ブラウザで `http://localhost:5000` にアクセスしてください。
