@@ -19,10 +19,15 @@
         <div class="form-group">
             <label for="icon">アイコン画像</label>
             <div class="current-icon">
+                {% if user and user.icon_path %}
                 <img id="icon-preview"
-                     src="{{ url_for('static', filename='uploads/' + user.icon_path) if user and user.icon_path else url_for('static', filename='uploads/default_icon.png') }}"
+                     src="{{ url_for('static', filename='uploads/' + user.icon_path) }}"
                      alt="アイコンプレビュー"
                      class="preview-icon">
+                {% else %}
+                <div id="icon-placeholder" class="preview-icon sidebar-icon-default">{{ user.username[0] | upper }}</div>
+                <img id="icon-preview" src="" alt="アイコンプレビュー" class="preview-icon" style="display:none;">
+                {% endif %}
             </div>
             <input type="file" id="icon" name="icon" accept="image/*">
         </div>
@@ -30,7 +35,7 @@
         <div class="form-group">
             <label for="profile">プロフィール</label>
             <textarea id="profile" name="profile" rows="4"
-                placeholder="自己紹介を入力してください">{{ user.profile if user else '' }}</textarea>
+                placeholder="自己紹介を入力してください">{{ user.profile or '' }}</textarea>
         </div>
 
         <div class="form-actions">
@@ -49,8 +54,11 @@
     document.getElementById('icon').addEventListener('change', function () {
         const file = this.files[0];
         if (!file) return;
-        // 選択したファイルの一時URLを生成してプレビューに反映
-        document.getElementById('icon-preview').src = URL.createObjectURL(file);
+        const preview     = document.getElementById('icon-preview');
+        const placeholder = document.getElementById('icon-placeholder');
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = '';
+        if (placeholder) placeholder.style.display = 'none';
     });
 </script>
 {% endblock %}
