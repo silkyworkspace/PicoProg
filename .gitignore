@@ -5,3 +5,4 @@ __pycache__/
 static/uploads/*
 !static/uploads/.gitkeep
 .DS_Store
+database/picoprog.db
