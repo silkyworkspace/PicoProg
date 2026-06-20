@@ -8,12 +8,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <!-- OGP -->
+    <meta property="og:title" content="PicoProg">
+    <meta property="og:description" content="Python学習の進捗を投稿・共有できるSNS">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://divsawa.pythonanywhere.com">
+    <meta property="og:image" content="https://divsawa.pythonanywhere.com/static/ogp.jpg">
+    <meta property="og:site_name" content="PicoProg">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
     <header>
-        <h1><a href="/">Pico<span class="logo-accent">Prog</span></a></h1>
+        <h1><a href="/"><img src="{{ url_for('static', filename='picoprog.svg') }}" alt="PicoProg" class="site-logo"></a></h1>
     </header>
 
     {% if session.user_id %}
