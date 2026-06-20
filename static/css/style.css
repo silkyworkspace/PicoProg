@@ -54,11 +54,10 @@ header {
   z-index: 10;
 }
 
-header h1 a {
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--ink);
-  letter-spacing: -0.5px;
+.site-logo {
+  height: 30px;
+  width: auto;
+  display: block;
 }
 
 .logo-accent {
