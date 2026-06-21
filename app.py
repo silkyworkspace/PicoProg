@@ -198,6 +198,8 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user_id' in session:
+        return redirect(url_for('index'))
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -245,6 +247,8 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if 'user_id' in session:
+        return redirect(url_for('index'))
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
