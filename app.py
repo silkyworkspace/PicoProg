@@ -522,6 +522,10 @@ def user_settings():
                 flash('ユーザー名を入力してください', 'error')
                 return render_template('user_settings.html', user=user)
 
+            if profile and len(profile) > 200:
+                flash('プロフィールは200文字以内で入力してください', 'error')
+                return render_template('user_settings.html', user=user)
+
             is_valid, error_message = validate_image(icon)
             if not is_valid:
                 flash(error_message, 'error')
