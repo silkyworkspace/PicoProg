@@ -978,6 +978,10 @@ def notifications():
             "UPDATE notifications SET is_read = 1, read_at = datetime('now', 'localtime') WHERE user_id = ? AND is_read = 0",
             (session['user_id'],)
         )
+        cursor.execute(
+            "DELETE FROM notifications WHERE user_id = ? AND is_read = 1 AND read_at <= datetime('now', '-30 days', 'localtime')",
+            (session['user_id'],)
+        )
         conn.commit()
 
         return render_template('notifications.html', notifications=notifs)
