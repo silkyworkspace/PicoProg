@@ -1,117 +1,140 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="ja">
 
-{% block title %}新規登録{% endblock %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新規登録 - PicoProg</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
 
-{% block content %}
-<div class="auth-container">
-    <h2>新規登録</h2>
+<body class="auth-page">
+  <div class="auth-page-wrap">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
 
-    <form method="POST" action="{{ url_for('register') }}" class="auth-form">
+    <div class="auth-container">
+      <img src="{{ url_for('static', filename='picoprog.svg') }}" alt="PicoProg" class="auth-logo">
+
+      <h2>新規登録</h2>
+      <form method="POST" action="{{ url_for('register') }}" class="auth-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div class="form-group">
-            <label for="username">ユーザー名</label>
-            <input type="text" id="username" name="username" placeholder="ユーザー名（3〜20文字）">
+          <label for="username">ユーザー名</label>
+          <input type="text" id="username" name="username" placeholder="ユーザー名（3〜20文字）">
         </div>
 
         <div class="form-group">
-            <label for="email">メールアドレス</label>
-            <input type="email" id="email" name="email" placeholder="example@email.com">
+          <label for="email">メールアドレス</label>
+          <input type="email" id="email" name="email" placeholder="example@email.com">
         </div>
 
         <div class="form-group">
-            <label for="password">パスワード</label>
-            <input type="password" id="password" name="password" placeholder="8文字以上・英字と数字を含む">
+          <label for="password">パスワード</label>
+          <input type="password" id="password" name="password" placeholder="8文字以上・英字と数字を含む">
         </div>
 
         <div class="form-group">
-            <label for="password_confirm">パスワード（確認）</label>
-            <input type="password" id="password_confirm" name="password_confirm" placeholder="パスワードを再入力">
+          <label for="password_confirm">パスワード（確認）</label>
+          <input type="password" id="password_confirm" name="password_confirm" placeholder="パスワードを再入力">
         </div>
 
         <button type="submit" class="btn btn-primary">登録してログイン</button>
-    </form>
-    <p class="auth-link">
+      </form>
+      <p class="auth-link">
         アカウントをお持ちの方は<a href="{{ url_for('login') }}">ログインページへ</a>
-    </p>
-</div>
-{% endblock %}
+      </p>
+    </div>
+  </div>
 
-{% block scripts %}
-<script>
-(function () {
-  const form = document.querySelector('.auth-form');
-  const usernameInput = document.getElementById('username');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const confirmInput = document.getElementById('password_confirm');
+  <script>
+    (function () {
+      const form = document.querySelector('.auth-form');
+      const usernameInput = document.getElementById('username');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const confirmInput = document.getElementById('password_confirm');
 
-  function showError(input, msg) {
-    input.classList.add('is-invalid');
-    let span = input.parentElement.querySelector('.field-error-msg');
-    if (!span) {
-      span = document.createElement('span');
-      span.className = 'field-error-msg';
-      input.parentElement.appendChild(span);
-    }
-    span.textContent = msg;
-  }
+      function showError(input, msg) {
+        input.classList.add('is-invalid');
+        let span = input.parentElement.querySelector('.field-error-msg');
+        if (!span) {
+          span = document.createElement('span');
+          span.className = 'field-error-msg';
+          input.parentElement.appendChild(span);
+        }
+        span.textContent = msg;
+      }
 
-  function clearError(input) {
-    input.classList.remove('is-invalid');
-    const span = input.parentElement.querySelector('.field-error-msg');
-    if (span) span.textContent = '';
-  }
+      function clearError(input) {
+        input.classList.remove('is-invalid');
+        const span = input.parentElement.querySelector('.field-error-msg');
+        if (span) span.textContent = '';
+      }
 
-  function isValidEmail(v) {
-    return /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(v);
-  }
+      function isValidEmail(v) {
+        return /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(v);
+      }
 
-  function validatePassword(v) {
-    if (v.length < 8) return '8文字以上で入力してください';
-    if (!/[a-zA-Z]/.test(v)) return '英字を含めてください';
-    if (!/[0-9]/.test(v)) return '数字を含めてください';
-    return null;
-  }
+      function validatePassword(v) {
+        if (v.length < 8) return '8文字以上で入力してください';
+        if (!/[a-zA-Z]/.test(v)) return '英字を含めてください';
+        if (!/[0-9]/.test(v)) return '数字を含めてください';
+        return null;
+      }
 
-  [usernameInput, emailInput, passwordInput, confirmInput].forEach(el =>
-    el.addEventListener('input', () => clearError(el))
-  );
+      [usernameInput, emailInput, passwordInput, confirmInput].forEach(el =>
+        el.addEventListener('input', () => clearError(el))
+      );
 
-  form.addEventListener('submit', function (e) {
-    let ok = true;
+      form.addEventListener('submit', function (e) {
+        let ok = true;
 
-    const uname = usernameInput.value.trim();
-    if (!uname) {
-      showError(usernameInput, 'ユーザー名を入力してください');
-      ok = false;
-    } else if (uname.length < 3 || uname.length > 20) {
-      showError(usernameInput, 'ユーザー名は3〜20文字で入力してください');
-      ok = false;
-    }
+        const uname = usernameInput.value.trim();
+        if (!uname) {
+          showError(usernameInput, 'ユーザー名を入力してください');
+          ok = false;
+        } else if (uname.length < 3 || uname.length > 20) {
+          showError(usernameInput, 'ユーザー名は3〜20文字で入力してください');
+          ok = false;
+        }
 
-    const email = emailInput.value.trim();
-    if (!email) {
-      showError(emailInput, 'メールアドレスを入力してください');
-      ok = false;
-    } else if (!isValidEmail(email)) {
-      showError(emailInput, 'メールアドレスの形式が正しくありません');
-      ok = false;
-    }
+        const email = emailInput.value.trim();
+        if (!email) {
+          showError(emailInput, 'メールアドレスを入力してください');
+          ok = false;
+        } else if (!isValidEmail(email)) {
+          showError(emailInput, 'メールアドレスの形式が正しくありません');
+          ok = false;
+        }
 
-    const pwdErr = validatePassword(passwordInput.value);
-    if (pwdErr) {
-      showError(passwordInput, pwdErr);
-      ok = false;
-    }
+        const pwdErr = validatePassword(passwordInput.value);
+        if (pwdErr) {
+          showError(passwordInput, pwdErr);
+          ok = false;
+        }
 
-    if (passwordInput.value !== confirmInput.value) {
-      showError(confirmInput, 'パスワードが一致しません');
-      ok = false;
-    }
+        if (passwordInput.value !== confirmInput.value) {
+          showError(confirmInput, 'パスワードが一致しません');
+          ok = false;
+        }
 
-    if (!ok) e.preventDefault();
-  });
-})();
-</script>
-{% endblock %}
+        if (!ok) e.preventDefault();
+      });
+    })();
+  </script>
+</body>
+
+</html>
