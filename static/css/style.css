@@ -1215,11 +1215,6 @@ footer {
   background: var(--green-wash);
 }
 
-/* .notification-item.unread .notification-preview {
-  background: var(--green-wash);
-  border-left-color: var(--green);
-} */
-
 .notification-link {
   display: flex;
   align-items: center;
