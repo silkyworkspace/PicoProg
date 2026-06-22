@@ -44,6 +44,12 @@
                 <a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}class="active"{% endif %}>タイムライン</a>
                 <a href="{{ url_for('new_post') }}" {% if request.endpoint == 'new_post' %}class="active"{% endif %}>投稿する</a>
                 <a href="{{ url_for('favorites') }}" {% if request.endpoint == 'favorites' %}class="active"{% endif %}>お気に入り</a>
+                <a href="{{ url_for('notifications') }}" {% if request.endpoint == 'notifications' %}class="active"{% endif %}>
+                    通知
+                    {% if unread_notification_count > 0 %}
+                    <span class="notification-badge">{{ unread_notification_count }}</span>
+                    {% endif %}
+                </a>
                 <a href="{{ url_for('user_settings') }}" {% if request.endpoint == 'user_settings' %}class="active"{% endif %}>ユーザー設定</a>
                 <a href="{{ url_for('logout') }}">ログアウト</a>
             </nav>

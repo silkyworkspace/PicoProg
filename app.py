@@ -51,6 +51,27 @@ csrf = CSRFProtect(app)
 def inject_csrf_token():
     return dict(csrf_token=generate_csrf)
 
+@app.context_processor
+def inject_unread_count():
+    if 'user_id' not in session:
+        return dict(unread_notification_count=0)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT COUNT(*) AS cnt FROM notifications WHERE user_id = ? AND is_read = 0',
+            (session['user_id'],)
+        )
+        count = cursor.fetchone()['cnt']
+    except Exception:
+        count = 0
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
+    return dict(unread_notification_count=count)
+
 
 def get_db_connection():
     conn = sqlite3.connect(Config.DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
@@ -457,8 +478,9 @@ def toggle_favorite(post_id):
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute('SELECT id FROM posts WHERE id = ?', (post_id,))
-        if not cursor.fetchone():
+        cursor.execute('SELECT id, user_id FROM posts WHERE id = ?', (post_id,))
+        post = cursor.fetchone()
+        if not post:
             flash('投稿が見つかりません', 'error')
             return redirect(url_for('index'))
 
@@ -480,6 +502,11 @@ def toggle_favorite(post_id):
                 (session['user_id'], post_id)
             )
             is_favorited = True
+            if post['user_id'] != session['user_id']:
+                cursor.execute(
+                    'INSERT INTO notifications (user_id, actor_id, type, post_id) VALUES (?, ?, ?, ?)',
+                    (post['user_id'], session['user_id'], 'favorite', post_id)
+                )
 
         conn.commit()
 
@@ -644,7 +671,7 @@ def comment(post_id):
         cursor = conn.cursor()
 
         cursor.execute('''
-            SELECT p.id, p.content, p.created_at, u.username, u.icon_path
+            SELECT p.id, p.user_id, p.content, p.created_at, u.username, u.icon_path
             FROM posts p
             JOIN users u ON p.user_id = u.id
             WHERE p.id = ?
@@ -710,6 +737,11 @@ def comment(post_id):
                 'INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)',
                 (post_id, session['user_id'], content)
             )
+            if post['user_id'] != session['user_id']:
+                cursor.execute(
+                    'INSERT INTO notifications (user_id, actor_id, type, post_id) VALUES (?, ?, ?, ?)',
+                    (post['user_id'], session['user_id'], 'comment', post_id)
+                )
             conn.commit()
 
             flash('コメントしました', 'success')
@@ -741,8 +773,9 @@ def toggle_like(post_id):
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute('SELECT id FROM posts WHERE id = ?', (post_id,))
-        if not cursor.fetchone():
+        cursor.execute('SELECT id, user_id FROM posts WHERE id = ?', (post_id,))
+        post = cursor.fetchone()
+        if not post:
             flash('投稿が見つかりません', 'error')
             return redirect(url_for('index'))
 
@@ -764,6 +797,11 @@ def toggle_like(post_id):
                 (session['user_id'], post_id)
             )
             is_liked = True
+            if post['user_id'] != session['user_id']:
+                cursor.execute(
+                    'INSERT INTO notifications (user_id, actor_id, type, post_id) VALUES (?, ?, ?, ?)',
+                    (post['user_id'], session['user_id'], 'like', post_id)
+                )
 
         conn.commit()
 
@@ -910,6 +948,42 @@ def user_profile(username):
         )
     except Exception as err:
         flash(f'プロフィールの読み込みに失敗しました: {err}', 'error')
+        return redirect(url_for('index'))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT n.id, n.type, n.is_read, n.created_at,
+                   u.username AS actor_name, u.icon_path AS actor_icon,
+                   p.id AS post_id, p.content AS post_content
+            FROM notifications n
+            JOIN users u ON n.actor_id = u.id
+            JOIN posts p ON n.post_id = p.id
+            WHERE n.user_id = ?
+            ORDER BY n.created_at DESC
+            LIMIT 50
+        ''', (session['user_id'],))
+        notifs = [dict(row) for row in cursor.fetchall()]
+
+        cursor.execute(
+            "UPDATE notifications SET is_read = 1, read_at = datetime('now', 'localtime') WHERE user_id = ? AND is_read = 0",
+            (session['user_id'],)
+        )
+        conn.commit()
+
+        return render_template('notifications.html', notifications=notifs)
+
+    except sqlite3.Error as err:
+        flash(f'通知の取得に失敗しました: {err}', 'error')
         return redirect(url_for('index'))
     finally:
         cursor.close()

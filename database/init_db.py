@@ -85,6 +85,21 @@ CREATE INDEX IF NOT EXISTS idx_comments_post_id          ON comments(post_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id         ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_post_id         ON favorites(post_id);
 
+CREATE TABLE IF NOT EXISTS notifications (
+    id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER  NOT NULL,
+    actor_id    INTEGER  NOT NULL,
+    type        TEXT     NOT NULL,
+    post_id     INTEGER  NOT NULL,
+    is_read     INTEGER  NOT NULL DEFAULT 0,
+    read_at     DATETIME,
+    created_at  DATETIME NOT NULL DEFAULT (datetime('now', 'localtime')),
+    FOREIGN KEY(user_id)  REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(actor_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(post_id)  REFERENCES posts(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+
 INSERT OR IGNORE INTO categories (name, type, sort_order) VALUES
     ('学習中',                     'status', 1),
     ('制作中',                     'status', 2),
