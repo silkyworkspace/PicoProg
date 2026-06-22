@@ -52,6 +52,10 @@ def inject_csrf_token():
     return dict(csrf_token=generate_csrf)
 
 @app.context_processor
+def inject_globals():
+    return dict(current_year=datetime.now().year)
+
+@app.context_processor
 def inject_unread_count():
     if 'user_id' not in session:
         return dict(unread_notification_count=0)
