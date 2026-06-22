@@ -965,6 +965,18 @@ def notifications():
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        page = request.args.get('page', 1, type=int)
+        if page < 1:
+            page = 1
+        offset = (page - 1) * PER_PAGE
+
+        cursor.execute(
+            "SELECT COUNT(*) FROM notifications n JOIN users u ON n.actor_id = u.id JOIN posts p ON n.post_id = p.id WHERE n.user_id = ?",
+            (session['user_id'],)
+        )
+        total = cursor.fetchone()[0]
+        total_pages = max(1, -(-total // PER_PAGE))
+
         cursor.execute('''
             SELECT n.id, n.type, n.is_read, n.created_at,
                    u.username AS actor_name, u.icon_path AS actor_icon,
@@ -974,25 +986,48 @@ def notifications():
             JOIN posts p ON n.post_id = p.id
             WHERE n.user_id = ?
             ORDER BY n.created_at DESC
-            LIMIT 50
-        ''', (session['user_id'],))
+            LIMIT ? OFFSET ?
+        ''', (session['user_id'], PER_PAGE, offset))
         notifs = [dict(row) for row in cursor.fetchall()]
 
-        cursor.execute(
-            "UPDATE notifications SET is_read = 1, read_at = datetime('now', 'localtime') WHERE user_id = ? AND is_read = 0",
-            (session['user_id'],)
-        )
         cursor.execute(
             "DELETE FROM notifications WHERE user_id = ? AND is_read = 1 AND read_at <= datetime('now', '-30 days', 'localtime')",
             (session['user_id'],)
         )
         conn.commit()
 
-        return render_template('notifications.html', notifications=notifs)
+        return render_template('notifications.html', notifications=notifs, page=page, total_pages=total_pages)
 
     except sqlite3.Error as err:
         flash(f'通知の取得に失敗しました: {err}', 'error')
         return redirect(url_for('index'))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/notifications/<int:notif_id>/read')
+@login_required
+def notification_read(notif_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT post_id FROM notifications WHERE id = ? AND user_id = ?",
+            (notif_id, session['user_id'])
+        )
+        row = cursor.fetchone()
+        if not row:
+            abort(404)
+        cursor.execute(
+            "UPDATE notifications SET is_read = 1, read_at = datetime('now', 'localtime') WHERE id = ? AND user_id = ?",
+            (notif_id, session['user_id'])
+        )
+        conn.commit()
+        return redirect(url_for('comment', post_id=row['post_id']))
+    except sqlite3.Error as err:
+        flash(f'既読処理に失敗しました: {err}', 'error')
+        return redirect(url_for('notifications'))
     finally:
         cursor.close()
         conn.close()

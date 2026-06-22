@@ -9,7 +9,7 @@
     <ul class="notification-list">
         {% for n in notifications %}
         <li class="notification-item {% if not n.is_read %}unread{% endif %}">
-            <a href="{{ url_for('comment', post_id=n.post_id) }}" class="notification-link">
+            <a href="{{ url_for('notification_read', notif_id=n.id) }}" class="notification-link">
                 <div class="notification-actor">
                     {% if n.actor_icon %}
                     <img src="{{ url_for('static', filename='uploads/' + n.actor_icon) }}"
@@ -36,6 +36,26 @@
         </li>
         {% endfor %}
     </ul>
+    {% if total_pages > 1 %}
+    <nav class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('notifications', page=page - 1) }}" class="page-btn">前へ</a>
+        {% else %}
+        <span class="page-btn disabled">前へ</span>
+        {% endif %}
+
+        {% for p in range(1, total_pages + 1) %}
+        <a href="{{ url_for('notifications', page=p) }}"
+           class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a href="{{ url_for('notifications', page=page + 1) }}" class="page-btn">次へ</a>
+        {% else %}
+        <span class="page-btn disabled">次へ</span>
+        {% endif %}
+    </nav>
+    {% endif %}
     {% else %}
     <p class="empty-message">通知はありません</p>
     {% endif %}

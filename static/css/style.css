@@ -660,7 +660,7 @@ a.user-info:hover {
   height: 40px;
   width: auto;
   display: block;
-  margin: 0 auto 1.5em;
+  margin: 0 auto 1rem;
 }
 
 .auth-container {
@@ -1215,6 +1215,11 @@ footer {
   background: var(--green-wash);
 }
 
+/* .notification-item.unread .notification-preview {
+  background: var(--green-wash);
+  border-left-color: var(--green);
+} */
+
 .notification-link {
   display: flex;
   align-items: center;
@@ -1225,7 +1230,7 @@ footer {
 }
 
 .notification-link:hover {
-  background: var(--bg);
+  background: var(--green-wash);
   border-radius: var(--radius);
 }
 
@@ -1263,9 +1268,9 @@ footer {
   font-size: 0.78rem;
   color: var(--muted);
   background: var(--bg);
-  border-left: 2px solid var(--line);
+  border-left: 4px solid var(--line);
   padding: 0.25rem 0.5rem;
-  border-radius: 0 4px 4px 0;
+  border-radius: 4px;
   margin: 0.25rem 0;
   line-height: 1.4;
   white-space: nowrap;
