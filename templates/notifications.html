@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}通知{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+    <h2 class="page-title">通知</h2>
+
+    {% if notifications %}
+    <ul class="notification-list">
+        {% for n in notifications %}
+        <li class="notification-item {% if not n.is_read %}unread{% endif %}">
+            <a href="{{ url_for('comment', post_id=n.post_id) }}" class="notification-link">
+                <div class="notification-actor">
+                    {% if n.actor_icon %}
+                    <img src="{{ url_for('static', filename='uploads/' + n.actor_icon) }}"
+                         alt="{{ n.actor_name }}" class="notification-icon">
+                    {% else %}
+                    <div class="notification-icon notification-icon-default">{{ n.actor_name[0] | upper }}</div>
+                    {% endif %}
+                </div>
+                <div class="notification-body">
+                    <p class="notification-text">
+                        <strong>{{ n.actor_name }}</strong>さんが
+                        {% if n.type == 'like' %}あなたの投稿にいいねしました
+                        {% elif n.type == 'comment' %}あなたの投稿にコメントしました
+                        {% elif n.type == 'favorite' %}あなたの投稿をお気に入りに追加しました
+                        {% endif %}
+                    </p>
+                    <p class="notification-preview">{{ n.post_content | truncate(60, True, '…') }}</p>
+                    <time class="notification-time">{{ n.created_at.strftime('%Y/%m/%d %H:%M') }}</time>
+                </div>
+                {% if not n.is_read %}
+                <span class="unread-dot"></span>
+                {% endif %}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty-message">通知はありません</p>
+    {% endif %}
+</div>
+{% endblock %}

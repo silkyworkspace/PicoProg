@@ -1151,6 +1151,119 @@ footer {
   font-weight: 700;
 }
 
+/* ===== NOTIFICATIONS ===== */
+.notification-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 99px;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+  line-height: 1;
+  translate: 0 -2px;
+}
+
+.notifications-container {
+  max-width: 600px;
+}
+
+.notification-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notification-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: background 0.12s;
+}
+
+.notification-item.unread {
+  border-left: 3px solid var(--green);
+  background: var(--green-wash);
+}
+
+.notification-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.notification-link:hover {
+  background: var(--bg);
+  border-radius: var(--radius);
+}
+
+.notification-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.notification-icon-default {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-text {
+  font-size: 0.85rem;
+  margin: 0 0 0.25rem;
+  line-height: 1.4;
+}
+
+.notification-preview {
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--bg);
+  border-left: 2px solid var(--line);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0 4px 4px 0;
+  margin: 0.25rem 0;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-time {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.unread-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
 /* ===== ACCESSIBILITY ===== */
 :focus-visible {
   outline: 2px solid var(--green);
