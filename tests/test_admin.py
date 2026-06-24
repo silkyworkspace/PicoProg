@@ -2,7 +2,6 @@ import sys
 import os
 import sqlite3
 import unittest
-import json
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -107,7 +106,7 @@ def _init_test_db():
     conn.close()
 
 
-class TestLikes(unittest.TestCase):
+class TestAdmin(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -126,27 +125,25 @@ class TestLikes(unittest.TestCase):
             sess.clear()
         conn = sqlite3.connect(TEST_DB_PATH)
         conn.execute('DELETE FROM notifications')
-        conn.execute('DELETE FROM likes')
-        conn.execute('DELETE FROM favorites')
         conn.execute('DELETE FROM post_categories')
         conn.execute('DELETE FROM posts')
         conn.execute('DELETE FROM users')
         conn.commit()
         conn.close()
-        # owner（投稿者）と other（操作する側）を用意する
-        self._register_and_login('owner', 'owner@example.com', 'Password1')
-        self._create_post()
-        self.post_id = self._get_latest_post_id()
-        self.client.get('/logout')
-        self._register_and_login('other', 'other@example.com', 'Password1')
+        # 一般ユーザーと管理者を登録する
+        self._register('user', 'user@example.com', 'Password1')
+        self._register('admin', 'admin@example.com', 'Password1')
+        self._set_admin('admin@example.com')
 
-    def _register_and_login(self, username, email, password):
+    def _register(self, username, email, password):
         self.client.post('/register', data={
             'username': username,
             'email': email,
             'password': password,
             'password_confirm': password
         }, follow_redirects=True)
+        with self.client.session_transaction() as sess:
+            sess.clear()
 
     def _login(self, email, password='Password1'):
         self.client.post('/login', data={
@@ -154,13 +151,26 @@ class TestLikes(unittest.TestCase):
             'password': password
         }, follow_redirects=True)
 
-    def _create_post(self, content='テスト投稿です', categories=None):
-        if categories is None:
-            categories = ['1']
+    def _set_admin(self, email):
+        """DBを直接更新してis_adminフラグを立てる"""
+        conn = sqlite3.connect(TEST_DB_PATH)
+        conn.execute('UPDATE users SET is_admin = 1 WHERE email = ?', (email,))
+        conn.commit()
+        conn.close()
+
+    def _create_post_as_user(self):
+        """一般ユーザーでログインして投稿し、ログアウトする"""
+        self._login('user@example.com')
         self.client.post('/post/new', data={
-            'content': content,
-            'categories': categories
+            'content': 'テスト投稿', 'categories': ['1']
         }, follow_redirects=True)
+        self.client.get('/logout')
+
+    def _get_user_id(self, email):
+        conn = sqlite3.connect(TEST_DB_PATH)
+        row = conn.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
+        conn.close()
+        return row[0] if row else None
 
     def _get_latest_post_id(self):
         conn = sqlite3.connect(TEST_DB_PATH)
@@ -168,87 +178,77 @@ class TestLikes(unittest.TestCase):
         conn.close()
         return row[0] if row else None
 
-    def _count_notifications(self, type_):
-        conn = sqlite3.connect(TEST_DB_PATH)
-        row = conn.execute(
-            'SELECT COUNT(*) FROM notifications WHERE type = ?', (type_,)
-        ).fetchone()
-        conn.close()
-        return row[0]
+    # ===== アクセス制限テスト =====
 
-    # ===== いいねテスト =====
-
-    def test_like_post(self):
-        # 他人の投稿にいいね → liked: True, like_count: 1
-        response = self.client.post(f'/post/{self.post_id}/like')
-        data = json.loads(response.data)
-        self.assertTrue(data['liked'])
-        self.assertEqual(data['like_count'], 1)
-
-    def test_unlike_post(self):
-        # いいねを2回押す → toggle されて liked: False, like_count: 0
-        self.client.post(f'/post/{self.post_id}/like')
-        response = self.client.post(f'/post/{self.post_id}/like')
-        data = json.loads(response.data)
-        self.assertFalse(data['liked'])
-        self.assertEqual(data['like_count'], 0)
-
-    def test_like_requires_login(self):
-        # 未ログインでいいね → ログインページへリダイレクト
-        with self.client.session_transaction() as sess:
-            sess.clear()
-        response = self.client.post(f'/post/{self.post_id}/like')
+    def test_admin_page_requires_login(self):
+        # 未ログインで /admin → ログインページへリダイレクト
+        response = self.client.get('/admin')
         self.assertEqual(response.status_code, 302)
         self.assertIn('/login', response.headers['Location'])
 
-    def test_like_other_post_creates_notification(self):
-        # 他人の投稿にいいね → like 通知が1件作られる
-        self.client.post(f'/post/{self.post_id}/like')
-        self.assertEqual(self._count_notifications('like'), 1)
+    def test_admin_page_rejects_normal_user(self):
+        # 一般ユーザーで /admin → エラーになる
+        self._login('user@example.com')
+        response = self.client.get('/admin', follow_redirects=True)
+        self.assertIn('管理者のみアクセスできます', response.data.decode('utf-8'))
 
-    def test_like_own_post_no_notification(self):
-        # 自分の投稿にいいね → 通知は作られない
-        self.client.get('/logout')
-        self._login('owner@example.com')
-        self.client.post(f'/post/{self.post_id}/like')
-        self.assertEqual(self._count_notifications('like'), 0)
+    def test_admin_page_accessible_by_admin(self):
+        # 管理者で /admin → 「管理者パネル」が表示される
+        self._login('admin@example.com')
+        response = self.client.get('/admin')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('管理者パネル', response.data.decode('utf-8'))
 
-    # ===== お気に入りテスト =====
+    # ===== ユーザー削除テスト =====
 
-    def test_favorite_post(self):
-        # 他人の投稿をお気に入り → favorited: True, favorite_count: 1
-        response = self.client.post(f'/post/{self.post_id}/favorite')
-        data = json.loads(response.data)
-        self.assertTrue(data['favorited'])
-        self.assertEqual(data['favorite_count'], 1)
+    def test_admin_can_delete_user(self):
+        # 管理者が一般ユーザーを削除 → 成功する
+        self._login('admin@example.com')
+        user_id = self._get_user_id('user@example.com')
+        response = self.client.post(
+            f'/admin/user/{user_id}/delete', follow_redirects=True
+        )
+        self.assertIn('ユーザーを削除しました', response.data.decode('utf-8'))
 
-    def test_unfavorite_post(self):
-        # お気に入りを2回押す → toggle されて favorited: False, favorite_count: 0
-        self.client.post(f'/post/{self.post_id}/favorite')
-        response = self.client.post(f'/post/{self.post_id}/favorite')
-        data = json.loads(response.data)
-        self.assertFalse(data['favorited'])
-        self.assertEqual(data['favorite_count'], 0)
+    def test_admin_cannot_delete_self(self):
+        # 管理者が自分自身を削除しようとする → エラーになる
+        self._login('admin@example.com')
+        admin_id = self._get_user_id('admin@example.com')
+        response = self.client.post(
+            f'/admin/user/{admin_id}/delete', follow_redirects=True
+        )
+        self.assertIn('自分自身を削除することはできません', response.data.decode('utf-8'))
 
-    def test_favorite_requires_login(self):
-        # 未ログインでお気に入り → ログインページへリダイレクト
-        with self.client.session_transaction() as sess:
-            sess.clear()
-        response = self.client.post(f'/post/{self.post_id}/favorite')
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/login', response.headers['Location'])
+    def test_normal_user_cannot_delete_user(self):
+        # 一般ユーザーがユーザー削除を試みる → エラーになる
+        self._login('user@example.com')
+        admin_id = self._get_user_id('admin@example.com')
+        response = self.client.post(
+            f'/admin/user/{admin_id}/delete', follow_redirects=True
+        )
+        self.assertIn('管理者のみアクセスできます', response.data.decode('utf-8'))
 
-    def test_favorite_other_post_creates_notification(self):
-        # 他人の投稿をお気に入り → favorite 通知が1件作られる
-        self.client.post(f'/post/{self.post_id}/favorite')
-        self.assertEqual(self._count_notifications('favorite'), 1)
+    # ===== 投稿削除テスト =====
 
-    def test_favorite_own_post_no_notification(self):
-        # 自分の投稿をお気に入り → 通知は作られない
-        self.client.get('/logout')
-        self._login('owner@example.com')
-        self.client.post(f'/post/{self.post_id}/favorite')
-        self.assertEqual(self._count_notifications('favorite'), 0)
+    def test_admin_can_delete_any_post(self):
+        # 管理者が他人の投稿を削除 → 成功する
+        self._create_post_as_user()
+        post_id = self._get_latest_post_id()
+        self._login('admin@example.com')
+        response = self.client.post(
+            f'/admin/post/{post_id}/delete', follow_redirects=True
+        )
+        self.assertIn('投稿を削除しました', response.data.decode('utf-8'))
+
+    def test_normal_user_cannot_delete_via_admin(self):
+        # 一般ユーザーが管理者ルートで投稿削除を試みる → エラーになる
+        self._create_post_as_user()
+        post_id = self._get_latest_post_id()
+        self._login('user@example.com')
+        response = self.client.post(
+            f'/admin/post/{post_id}/delete', follow_redirects=True
+        )
+        self.assertIn('管理者のみアクセスできます', response.data.decode('utf-8'))
 
 
 if __name__ == '__main__':

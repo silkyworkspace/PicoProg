@@ -15,6 +15,7 @@
 - タイムライン・お気に入り・通知ページのページネーション（1ページ10件）
 - プロフィール編集（アイコン画像アップロード対応）
 - カスタムエラーページ（404 / 500）
+- 管理者機能（ユーザー一覧・削除、全投稿一覧・削除）
 
 ## 技術スタック
 
@@ -91,6 +92,29 @@ flask run
 ```
 
 ブラウザで `http://localhost:5000` にアクセスしてください。
+
+7. （任意）管理者ユーザーを設定
+
+```bash
+sqlite3 database/picoprog.db "UPDATE users SET is_admin = 1 WHERE email = 'your@email.com';"
+```
+
+管理者ユーザーでログインするとサイドバーに「管理者パネル」リンクが表示されます。
+
+## テスト
+
+```bash
+source venv/bin/activate
+python -m pytest tests/ -v
+```
+
+| ファイル | 件数 | 内容 |
+|---|---|---|
+| `tests/test_validators.py` | 16件 | メール・パスワード・ユーザー名のバリデーション |
+| `tests/test_auth.py` | 8件 | 登録・ログイン・ログアウト・未ログイン保護 |
+| `tests/test_posts.py` | 10件 | 投稿・コメントのCRUDと権限チェック |
+| `tests/test_likes.py` | 10件 | いいね・お気に入りのtoggle動作と通知 |
+| `tests/test_admin.py` | 8件 | 管理者機能のアクセス制限・削除操作 |
 
 ## カテゴリ
 
