@@ -121,6 +121,18 @@ def login_required(f):
     return decorated_function
 
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        if not session.get('is_admin'):
+            flash('管理者のみアクセスできます', 'error')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.route('/')
 @login_required
 def index():
@@ -242,7 +254,7 @@ def login():
             cursor = conn.cursor()
 
             cursor.execute(
-                'SELECT id, username, password, icon_path FROM users WHERE email = ?', (email,)
+                'SELECT id, username, password, icon_path, is_admin FROM users WHERE email = ?', (email,)
             )
             user = cursor.fetchone()
 
@@ -254,6 +266,7 @@ def login():
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['user_icon'] = user['icon_path']
+            session['is_admin'] = bool(user['is_admin'])
 
             flash(f"{session['username']}さん、ログインしました", 'success')
             return redirect(url_for('index'))
@@ -1028,6 +1041,79 @@ def notification_read(notif_id):
     except sqlite3.Error as err:
         flash(f'既読処理に失敗しました: {err}', 'error')
         return redirect(url_for('notifications'))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/admin')
+@admin_required
+def admin():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            'SELECT id, username, email, is_admin, created_at FROM users ORDER BY id'
+        )
+        users = cursor.fetchall()
+        cursor.execute(
+            '''SELECT posts.id, posts.content, posts.created_at, users.username
+               FROM posts
+               JOIN users ON posts.user_id = users.id
+               ORDER BY posts.id DESC'''
+        )
+        posts = cursor.fetchall()
+        return render_template('admin.html', users=users, posts=posts)
+    except sqlite3.Error as err:
+        flash(f'データの取得に失敗しました: {err}', 'error')
+        return redirect(url_for('index'))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    if user_id == session['user_id']:
+        flash('自分自身を削除することはできません', 'error')
+        return redirect(url_for('admin'))
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM users WHERE id = ?', (user_id,))
+        if not cursor.fetchone():
+            flash('ユーザーが見つかりません', 'error')
+            return redirect(url_for('admin'))
+        cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+        conn.commit()
+        flash('ユーザーを削除しました', 'success')
+        return redirect(url_for('admin'))
+    except sqlite3.Error as err:
+        flash(f'削除に失敗しました: {err}', 'error')
+        return redirect(url_for('admin'))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/admin/post/<int:post_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_post(post_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM posts WHERE id = ?', (post_id,))
+        if not cursor.fetchone():
+            flash('投稿が見つかりません', 'error')
+            return redirect(url_for('admin'))
+        cursor.execute('DELETE FROM posts WHERE id = ?', (post_id,))
+        conn.commit()
+        flash('投稿を削除しました', 'success')
+        return redirect(url_for('admin'))
+    except sqlite3.Error as err:
+        flash(f'削除に失敗しました: {err}', 'error')
+        return redirect(url_for('admin'))
     finally:
         cursor.close()
         conn.close()

@@ -51,6 +51,9 @@
                     {% endif %}
                 </a>
                 <a href="{{ url_for('user_settings') }}" {% if request.endpoint == 'user_settings' %}class="active"{% endif %}>ユーザー設定</a>
+                {% if session.is_admin %}
+                <a href="{{ url_for('admin') }}" {% if request.endpoint == 'admin' %}class="active"{% endif %}>管理者パネル</a>
+                {% endif %}
                 <a href="{{ url_for('logout') }}">ログアウト</a>
             </nav>
             {% block sidebar_extra %}{% endblock %}

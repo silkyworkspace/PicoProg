@@ -30,6 +30,7 @@ def _init_test_db():
             password    TEXT     NOT NULL,
             profile     TEXT,
             icon_path   TEXT,
+            is_admin    INTEGER  NOT NULL DEFAULT 0,
             created_at  DATETIME NOT NULL DEFAULT (datetime('now', 'localtime')),
             updated_at  DATETIME NOT NULL DEFAULT (datetime('now', 'localtime'))
         );

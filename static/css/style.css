@@ -1292,6 +1292,104 @@ footer {
   flex-shrink: 0;
 }
 
+/* ===== ADMIN ===== */
+.admin-container {
+  max-width: 900px;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--ink);
+}
+
+.admin-section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background: var(--bg);
+}
+
+.admin-table a {
+  color: var(--green-dark);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.admin-table a:hover {
+  text-decoration: underline;
+}
+
+.admin-table th:last-child,
+.admin-table td:last-child {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.btn-danger-sm {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 4px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.btn-danger-sm:hover {
+  background: #b91c1c;
+}
+
+.admin-self-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
 /* ===== ACCESSIBILITY ===== */
 :focus-visible {
   outline: 2px solid var(--green);
@@ -1309,6 +1407,25 @@ footer {
 }
 
 /* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .admin-section {
+    padding: 1rem 0.75rem;
+    overflow-x: auto;
+  }
+
+  .admin-table .col-id,
+  .admin-table .col-date,
+  .admin-table--users .col-email {
+    display: none;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
 @media (max-width: 480px) {
   header {
     padding: 0 1rem;

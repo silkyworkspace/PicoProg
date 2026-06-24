@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}管理者パネル{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h2 class="page-title">管理者パネル</h2>
+
+    <section class="admin-section">
+        <h3 class="admin-section-title">ユーザー管理（{{ users | length }}件）</h3>
+        {% if users %}
+        <table class="admin-table admin-table--users">
+            <thead>
+                <tr>
+                    <th class="col-id">ID</th>
+                    <th>ユーザー名</th>
+                    <th class="col-email">メールアドレス</th>
+                    <th class="col-admin">管理者</th>
+                    <th class="col-date">登録日</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td class="col-id">{{ user.id }}</td>
+                    <td>
+                        <a href="{{ url_for('user_profile', username=user.username) }}">
+                            {{ user.username }}
+                        </a>
+                    </td>
+                    <td class="col-email">{{ user.email }}</td>
+                    <td class="col-admin">{% if user.is_admin %}✓{% endif %}</td>
+                    <td class="col-date">{{ user.created_at.strftime('%Y/%m/%d') if user.created_at else '-' }}</td>
+                    <td>
+                        {% if user.id != session.user_id %}
+                        <form method="post"
+                              action="{{ url_for('admin_delete_user', user_id=user.id) }}"
+                              onsubmit="return confirm('{{ user.username }} を削除しますか？この操作は取り消せません。')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="btn-danger-sm">削除</button>
+                        </form>
+                        {% else %}
+                        <span class="admin-self-label">（自分）</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-message">ユーザーがいません</p>
+        {% endif %}
+    </section>
+
+    <section class="admin-section">
+        <h3 class="admin-section-title">投稿管理（{{ posts | length }}件）</h3>
+        {% if posts %}
+        <table class="admin-table admin-table--posts">
+            <thead>
+                <tr>
+                    <th class="col-id">ID</th>
+                    <th>投稿者</th>
+                    <th>内容</th>
+                    <th class="col-date">投稿日</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td class="col-id">{{ post.id }}</td>
+                    <td>{{ post.username }}</td>
+                    <td>{{ post.content | truncate(60, True, '…') }}</td>
+                    <td class="col-date">{{ post.created_at.strftime('%Y/%m/%d') if post.created_at else '-' }}</td>
+                    <td>
+                        <form method="post"
+                              action="{{ url_for('admin_delete_post', post_id=post.id) }}"
+                              onsubmit="return confirm('この投稿を削除しますか？この操作は取り消せません。')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="btn-danger-sm">削除</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-message">投稿がありません</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
