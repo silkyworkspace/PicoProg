@@ -40,6 +40,9 @@
                     <span class="sidebar-label">でログイン中</span>
                 </div>
             </div>
+            <div class="nav-scroll-wrapper">
+            <span class="nav-arrow nav-arrow-left">&#8249;</span>
+            <span class="nav-arrow nav-arrow-right">&#8250;</span>
             <nav class="main-nav">
                 <a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}class="active"{% endif %}>タイムライン</a>
                 <a href="{{ url_for('new_post') }}" {% if request.endpoint == 'new_post' %}class="active"{% endif %}>投稿する</a>
@@ -56,6 +59,7 @@
                 {% endif %}
                 <a href="{{ url_for('logout') }}">ログアウト</a>
             </nav>
+            </div>
             {% block sidebar_extra %}{% endblock %}
         </aside>
         <main>
@@ -108,6 +112,24 @@
     }
     </script>
 
+    <script>
+    (function () {
+        const nav = document.querySelector('.main-nav');
+        const wrapper = document.querySelector('.nav-scroll-wrapper');
+        if (!nav || !wrapper) return;
+
+        function updateArrows() {
+            const atLeft  = nav.scrollLeft <= 0;
+            const atRight = nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1;
+            wrapper.classList.toggle('show-left',  !atLeft);
+            wrapper.classList.toggle('show-right', !atRight && nav.scrollWidth > nav.clientWidth);
+        }
+
+        nav.addEventListener('scroll', updateArrows);
+        window.addEventListener('resize', updateArrows);
+        updateArrows();
+    })();
+    </script>
     {% block scripts %}{% endblock %}
 
 
