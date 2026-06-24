@@ -1049,6 +1049,7 @@ def notification_read(notif_id):
 @app.route('/admin')
 @admin_required
 def admin():
+    q = request.args.get('q', '').strip()
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -1056,14 +1057,25 @@ def admin():
             'SELECT id, username, email, is_admin, created_at FROM users ORDER BY id'
         )
         users = cursor.fetchall()
-        cursor.execute(
-            '''SELECT posts.id, posts.content, posts.created_at, users.username
-               FROM posts
-               JOIN users ON posts.user_id = users.id
-               ORDER BY posts.id DESC'''
-        )
+        if q:
+            cursor.execute(
+                '''SELECT posts.id, posts.content, posts.created_at, users.username
+                   FROM posts
+                   JOIN users ON posts.user_id = users.id
+                   WHERE posts.content LIKE ? OR users.username LIKE ?
+                   ORDER BY posts.id DESC''',
+                (f'%{q}%', f'%{q}%')
+            )
+        else:
+            cursor.execute(
+                '''SELECT posts.id, posts.content, posts.created_at, users.username
+                   FROM posts
+                   JOIN users ON posts.user_id = users.id
+                   ORDER BY posts.id DESC
+                   LIMIT 50'''
+            )
         posts = cursor.fetchall()
-        return render_template('admin.html', users=users, posts=posts)
+        return render_template('admin.html', users=users, posts=posts, q=q)
     except sqlite3.Error as err:
         flash(f'データの取得に失敗しました: {err}', 'error')
         return redirect(url_for('index'))
