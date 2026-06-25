@@ -96,17 +96,18 @@
 
 <script>
     function deleteComment(commentId) {
-        if (!confirm('このコメントを削除しますか？')) return;
-        const f = document.createElement('form');
-        f.method = 'POST';
-        f.action = `/comment/${commentId}/delete`;
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = 'csrf_token';
-        csrf.value = '{{ csrf_token() }}';
-        f.appendChild(csrf);
-        document.body.appendChild(f);
-        f.submit();
+        showDeleteModal('このコメントを削除しますか？この操作は取り消せません。', function () {
+            const f = document.createElement('form');
+            f.method = 'POST';
+            f.action = `/comment/${commentId}/delete`;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrf_token';
+            csrf.value = '{{ csrf_token() }}';
+            f.appendChild(csrf);
+            document.body.appendChild(f);
+            f.submit();
+        });
     }
 
     const CSRF_TOKEN      = '{{ csrf_token() }}';

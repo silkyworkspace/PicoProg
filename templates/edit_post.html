@@ -122,18 +122,18 @@
   });
 
   function confirmDelete() {
-    if (confirm('本当に削除しますか')) {
+    showDeleteModal('この投稿を削除しますか？この操作は取り消せません。', function () {
       const f = document.createElement('form');
       f.method = 'POST';
-      f.action = "{{ url_for('delete_post', post_id=post.id) }}";
+      f.action = "{{ url_for('delete_post', post_id=post.id) }}"; // Jinja2が埋め込み済み
       const csrf = document.createElement('input');
       csrf.type = 'hidden';
       csrf.name = 'csrf_token';
-      csrf.value = '{{ csrf_token() }}';
+      csrf.value = '{{ csrf_token() }}'; // Jinja2が埋め込み済み
       f.appendChild(csrf);
       document.body.appendChild(f);
-      f.submit();
-    }
+      f.submit(); // ← POSTリクエスト送信
+    });
   }
 
   window.confirmDelete = confirmDelete;

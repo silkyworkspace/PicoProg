@@ -132,6 +132,55 @@
     </script>
     {% block scripts %}{% endblock %}
 
+    <!-- 削除確認モーダル -->
+    <div id="delete-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal">
+            <h3 id="modal-title" class="modal-title">削除の確認</h3>
+            <p id="modal-message" class="modal-message"></p>
+            <div class="modal-actions">
+                <button type="button" class="btn" id="modal-cancel">キャンセル</button>
+                <button type="button" class="btn btn-danger" id="modal-confirm">削除する</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        const overlay  = document.getElementById('delete-modal');
+        const msgEl    = document.getElementById('modal-message');
+        const cancelBtn = document.getElementById('modal-cancel');
+        const confirmBtn = document.getElementById('modal-confirm');
+        let _callback = null;
+
+        function showDeleteModal(message, callback) {
+            msgEl.textContent = message;
+            _callback = callback;
+            overlay.removeAttribute('aria-hidden');
+            overlay.classList.add('is-open');
+            cancelBtn.focus();
+        }
+
+        function closeModal() {
+            overlay.setAttribute('aria-hidden', 'true');
+            overlay.classList.remove('is-open');
+            _callback = null;
+        }
+
+        cancelBtn.addEventListener('click', closeModal);
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeModal();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeModal();
+        });
+        confirmBtn.addEventListener('click', function () {
+            if (_callback) _callback();
+            closeModal();
+        });
+
+        window.showDeleteModal = showDeleteModal;
+    })();
+    </script>
 
 </body>
 

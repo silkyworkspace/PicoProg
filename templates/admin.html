@@ -35,9 +35,10 @@
                         {% if user.id != session.user_id %}
                         <form method="post"
                               action="{{ url_for('admin_delete_user', user_id=user.id) }}"
-                              onsubmit="return confirm('{{ user.username }} を削除しますか？この操作は取り消せません。')">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <button type="submit" class="btn-danger-sm">削除</button>
+                              id="del-user-{{ user.id }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="button" class="btn-danger-sm"
+                                    onclick="adminDeleteConfirm('del-user-{{ user.id }}', '{{ user.username }} を削除しますか？この操作は取り消せません。')">削除</button>
                         </form>
                         {% else %}
                         <span class="admin-self-label">（自分）</span>
@@ -82,9 +83,10 @@
                     <td>
                         <form method="post"
                               action="{{ url_for('admin_delete_post', post_id=post.id) }}"
-                              onsubmit="return confirm('この投稿を削除しますか？この操作は取り消せません。')">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                            <button type="submit" class="btn-danger-sm">削除</button>
+                              id="del-post-{{ post.id }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="button" class="btn-danger-sm"
+                                    onclick="adminDeleteConfirm('del-post-{{ post.id }}', 'この投稿を削除しますか？この操作は取り消せません。')">削除</button>
                         </form>
                     </td>
                 </tr>
@@ -96,4 +98,14 @@
         {% endif %}
     </section>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function adminDeleteConfirm(formId, message) {
+    showDeleteModal(message, function () {
+        document.getElementById(formId).submit();
+    });
+}
+</script>
 {% endblock %}
