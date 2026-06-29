@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 from functools import wraps
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import HTTPException
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 
 # SQLiteのDATETIME型をPythonのdatetimeに自動変換
@@ -963,6 +964,8 @@ def user_profile(username):
             total_pages=total_pages,
             post_count=total,
         )
+    except HTTPException:
+        raise
     except Exception as err:
         flash(f'プロフィールの読み込みに失敗しました: {err}', 'error')
         return redirect(url_for('index'))
