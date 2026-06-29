@@ -15,7 +15,7 @@
 - タイムライン・お気に入り・通知ページのページネーション（1ページ10件）
 - プロフィール編集（アイコン画像アップロード対応）
 - カスタムエラーページ（404 / 500）
-- 管理者機能（ユーザー一覧・削除、全投稿一覧・削除）
+- 管理者機能（ユーザー一覧・削除、全投稿一覧・キーワード検索・削除）
 
 ## 技術スタック
 
@@ -113,8 +113,12 @@ python -m pytest tests/ -v
 | `tests/test_validators.py` | 16件 | メール・パスワード・ユーザー名のバリデーション |
 | `tests/test_auth.py` | 8件 | 登録・ログイン・ログアウト・未ログイン保護 |
 | `tests/test_posts.py` | 10件 | 投稿・コメントのCRUDと権限チェック |
-| `tests/test_likes.py` | 10件 | いいね・お気に入りのtoggle動作と通知 |
-| `tests/test_admin.py` | 8件 | 管理者機能のアクセス制限・削除操作 |
+| `tests/test_likes.py` | 10件 | いいねのtoggle動作と通知 |
+| `tests/test_favorites.py` | 5件 | お気に入りのtoggle動作と通知 |
+| `tests/test_notifications.py` | 5件 | 通知の取得・既読化・自動削除 |
+| `tests/test_profile.py` | 5件 | プロフィール編集・アイコン更新 |
+| `tests/test_settings.py` | 6件 | アカウント設定（ユーザー名・パスワード変更） |
+| `tests/test_admin.py` | 12件 | 管理者機能のアクセス制限・検索・削除操作 |
 
 ## カテゴリ
 
