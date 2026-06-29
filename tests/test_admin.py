@@ -250,6 +250,52 @@ class TestAdmin(unittest.TestCase):
         )
         self.assertIn('管理者のみアクセスできます', response.data.decode('utf-8'))
 
+    # ===== 投稿検索テスト =====
+
+    def _create_post_with_content(self, content):
+        """一般ユーザーで指定内容の投稿を作成してログアウトする"""
+        self._login('user@example.com')
+        self.client.post('/post/new', data={
+            'content': content, 'categories': ['1']
+        }, follow_redirects=True)
+        self.client.get('/logout')
+
+    def test_admin_search_finds_matching_post(self):
+        # キーワードに一致する投稿が検索結果に表示される
+        self._create_post_with_content('Pythonの学習をしました')
+        self._login('admin@example.com')
+        response = self.client.get('/admin?q=Python')
+        body = response.data.decode('utf-8')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Pythonの学習をしました', body)
+
+    def test_admin_search_excludes_non_matching_post(self):
+        # キーワードに一致しない投稿は検索結果に含まれない
+        self._create_post_with_content('Flaskの復習をしました')
+        self._login('admin@example.com')
+        response = self.client.get('/admin?q=Python')
+        body = response.data.decode('utf-8')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('Flaskの復習をしました', body)
+
+    def test_admin_search_returns_empty_when_no_match(self):
+        # 一致しないキーワードで検索すると投稿が0件になる
+        self._create_post_with_content('HTMLの練習をしました')
+        self._login('admin@example.com')
+        response = self.client.get('/admin?q=存在しないキーワード')
+        body = response.data.decode('utf-8')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('HTMLの練習をしました', body)
+
+    def test_admin_search_without_query_shows_posts(self):
+        # キーワードなしで /admin にアクセスすると投稿一覧が表示される
+        self._create_post_with_content('CSSの勉強をしました')
+        self._login('admin@example.com')
+        response = self.client.get('/admin')
+        body = response.data.decode('utf-8')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('CSSの勉強をしました', body)
+
 
 if __name__ == '__main__':
     unittest.main()
